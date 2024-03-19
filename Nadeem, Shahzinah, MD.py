@@ -27,7 +27,7 @@ class histroy_of_illness:
                             It is necessary to concluded with "**No other medical concerns in today's appointment**".
                             Don't add the headings.
                             Don't repeat the lines.
-                            Don't write more than 4 lines.
+                            Use double astrikes for all the patient name and medication.
                             Write lines separately.
                         """
         prompt_2 = f"""
@@ -37,14 +37,14 @@ class histroy_of_illness:
                                     """
         few_shot_1 = """Write a history of illness of the patient based on the text that I will provide"""
         result_1 = """\
-                            Calvin Mcrae, a 71-year-old male, came in for a follow-up visit. \n \
+                            **Calvin Mcrae**, a 71-year-old male, came in for a follow-up visit. \n \
                             He has a medical history of Hypertension (HTN), Hypothyroidism, and a history of cellulitis of the face.\n \
                             He complains of the upper lip infection.\n \
                             **No other medical concerns in today's appointment**.\n \
                             """
         few_shot_2 = """Write a history of illness of the patient based on the text that I will provide"""
         result_2 = """\
-                            Godoy Sergio, a 39-year-old male, came in for a follow-up visit. \n \
+                            **Godoy Sergio**, a 39-year-old male, came in for a follow-up visit. \n \
                             The patient has a history of HTN, and he is taking his BP readings as an outpatient, his recent BP reading was 120/76, his heart rate was 68, and his current weight is 203 pounds. \n \
                             He reports his sugar levels are better.\n \
                             He is also following for DM, Atherosclerosis heart disease, and Hyperlipidemia.\n \
