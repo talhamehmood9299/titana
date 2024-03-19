@@ -3,9 +3,9 @@ from extra_functions import extract_text, get_completion, get_dictation
 from labs_radiology import get_lab_results
 from hpi import get_templates
 
-def task(post_data):
-    if "Task 1:" in post_data:
-        instance = histroy_of_illness(openai.api_key, post_data)
+def task(task_string, post_date):
+    if "Task 1:" == task_string:
+        instance = histroy_of_illness(post_date)
         response = instance.result
     else:
         response = "Task is not justified"
@@ -13,8 +13,7 @@ def task(post_data):
 
 
 class cpt_code:
-    def __init__(self, key, post_date, delimiter="####"):
-        self.key = key
+    def __init__(self, post_date, delimiter="####"):
         self.post_data = post_date
         self.delimiter = delimiter
         result = self.final()  # Call the final() method and store the result
