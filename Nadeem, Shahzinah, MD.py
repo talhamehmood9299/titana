@@ -33,118 +33,20 @@ class cpt_code:
         def final(self):
         result = get_cpt_code(self.post_date)
         return result
-        
+
 class histroy_of_illness:
-    def __init__(self, key, post_date, delimiter="####"):
-        self.key = key
+    def __init__(self, post_date, delimiter="####"):
         self.post_data = post_date
         self.delimiter = delimiter
         result = self.final()  # Call the final() method and store the result
         self.result = result  # Store the result as an attribute
 
-    def get_basic_information(self):
-        system_0 = """
-        Remove all the disease or disorders mentioned from the text delimited by triple backticks and rearrange the remaining text.
-        The headings should be:
-        1) Patient demographics.
-        2) Type of Visit.
-        3) Medications.
-        Note: Write only medication name and Sig in this heading. Don't write the Qty, Start Date:, Prescribe Date:  and End Date:
-        4) Doctor Dictation.
-        Note: Pick the doctor dictation that is after the "Doctor Dictation:" in the provided text.
-            """
-        prompt_0 = f"""
-        Remove all the disease or disorders mentioned from the text delimited by triple backticks and rearrange the remaining text.
-        ```{self.post_data}```
-        """
-        messages_0 = [
-            {'role': 'system', 'content': system_0},
-            {'role': 'user', 'content': f"{self.delimiter}{prompt_0}{self.delimiter}"}
-        ]
-        basic_info = get_completion(messages_0)
-        return basic_info
-
-    def get_history(self):
-        system_1 = f"""
-        As a medical assistant, your task is to check for the presence of a doctor's dictation section, typically located\
-        after the heading "doctor dictation."
-        If the "doctor dictation" and medications are available, focus on extracting diseases or disorders that are directly related \
-        to "doctor dictation" and related to mentioned medications. In cases where the doctor's dictation is absent, rely solely \
-        on mentioned medications. It is mandatory to write the reason of extraction.
-        Don't extract the disease or disorder if no medication mentioned directly related to this disorder.
-        If the "doctor dictation" and any medication is not mentioned in the provided text than extract only first five 
-        disease or disorders. In this case the sentence should be start from "The previous history of the patient is "
-        Don't add the BMI in the output.
-        Write the short form of disease or disorders. Don't write the complete name.
-        Don't extract the disease or disorder on the base of causes of medications.
-        Don't add the word "unspecified" in the output
-        Return "Noting" if no "doctor dictation" and medications are related to disease or disorder.
-        At the end it is necessary to write the related disease or disorders in one line.
-      """
-        prompt_1 = f"""
-        Based on the doctor's dictation and mentioned medications, Choose the diseases or disorders that are directly\
-        related to the doctor's dictation and mentioned medications from the text 
-        delimited by triple backticks.
-        Don't add the BMI in the output.
-        At the end it is necessary to write the related disease or disorders in one line.
-        ```{self.post_data}```
-    """
-
-        few_shot_user_1 = """
-        Based on the doctor's dictation and mentioned medications, Choose the diseases or disorders that are directly\
-        related to the doctor's dictation and mentioned medications from the text 
-        delimited by triple backticks.
-        Don't add the BMI in the output.
-        At the end it is necessary to write the related disease or disorders in one line.
-            """
-
-        few_shot_assistant_1 = """ 
-        1) Sleep deprivation - related to the medication hydroxyzine HCl which is used for allergies and sleep.
-        2) Insomnia - related to the medication hydroxyzine HCl which is used for sleep.
-        3) Angina pectoris - related to the medication Klonopin which is used for anxiety and panic disorders.
-        4) Chronic cough and Dysphonia - related to the medication Cepacol Sore Throat which is used for sore throat.
-        The patient has a history of sleep deprivation, insomnia, angina pectoris, Anxiety, chronic cough and dysphonia.
-         """
-        few_shot_user_2 = """
-        Based on the doctor's dictation and mentioned medications, Choose the diseases or disorders that are directly\
-        related to the doctor's dictation and mentioned medications from the text 
-        delimited by triple backticks.
-        Don't add the BMI in the output.
-        At the end it is necessary to write the related disease or disorders in one line.
-            """
-
-        few_shot_assistant_2 = """ 
-        1) Anxiety disorder- related to the doctor's dictation which is mentioned in the text. 
-        The patient disease or disorder is Anxiety.
-         """
-
-        messages_1 = [
-            {'role': 'system', 'content': system_1},
-            {'role': 'user', 'content': f"{self.delimiter}{few_shot_user_1}{self.delimiter}"},
-            {'role': 'assistant', 'content': f"{few_shot_assistant_1}"},
-            {'role': 'user', 'content': f"{self.delimiter}{few_shot_user_2}{self.delimiter}"},
-            {'role': 'assistant', 'content': f"{few_shot_assistant_2}"},
-            {'role': 'user', 'content': f"{self.delimiter}{prompt_1}"}
-        ]
-        response = get_completion(messages_1)
-        print(response)
-
-        # Split the text into lines
-        lines = response.split('\n')
-
-        # Extract the last line
-        history = lines[-1].strip()
-
-        return history
-
     def final(self):
-        basic_data = self.get_basic_information()
-        history = self.get_history()
         system_2 = f"""
                             You are a medical assistant and you job is to write a history of illness of the patient.
-                            The text contains the patient demographics, History of  disease or disorder, Medications and Doctor dictation.
+                            The text contains the patient demographics and Doctor dictation.
                             Please write a History of illness based on the text delimited by the triple backticks.lets think step by step.
-                            First line contains the patient demographics and provided 'history line'. Don't add the medications in this line.
+                            First line contains the patient demographics. Don't add the medications in this line.
                             Second line contains the patient current complains.
                             It is necessary to concluded with "**No other medical concerns in today's appointment**".
                             Don't add the headings.
@@ -153,10 +55,8 @@ class histroy_of_illness:
                             Write lines separately.
                         """
         prompt_2 = f"""
-                                    Please write a History of illness in based on the text delimited by the triple backticks,\
-                                    ```{basic_data}```
-                                    the the patient history is delimited by triple dashes,
-                                    ---{history}---
+                                    Please write a History of illness based on the text delimited by the triple backticks,\
+                                    ```{self.post_data}```
                                     and concluded with "No other medical concerns in today's appointment".
                                     """
         few_shot_1 = """Write a history of illness of the patient based on the text that I will provide"""
@@ -166,14 +66,26 @@ class histroy_of_illness:
                             He complains of the upper lip infection.\n \
                             **No other medical concerns in today's appointment**.\n \
                             """
+        few_shot_2 = """Write a history of illness of the patient based on the text that I will provide"""
+        result_2 = """\
+                            Godoy Sergio, a 39-year-old male, came in for a follow-up visit. \n \
+                            The patient has a history of HTN, and he is taking his BP readings as an outpatient, his recent BP reading was 120/76, his heart rate was 68, and his current weight is 203 pounds. \n \
+                            He reports his sugar levels are better.\n \
+                            He is also following for DM, Atherosclerosis heart disease, and Hyperlipidemia.\n \
+                            **No other medical concerns in today's appointment**.\n 
+                            """
+
         messages_2 = [{'role': 'system', 'content': system_2},
                       {'role': 'user', 'content': f"{self.delimiter}{few_shot_1}{self.delimiter}"},
                       {'role': 'assistant', 'content': result_1},
+                      {'role': 'user', 'content': f"{self.delimiter}{prompt_2}{self.delimiter}"},
+                      {'role': 'system', 'content': system_2},
+                      {'role': 'user', 'content': f"{self.delimiter}{few_shot_2}{self.delimiter}"},
+                      {'role': 'assistant', 'content': result_2},
                       {'role': 'user', 'content': f"{self.delimiter}{prompt_2}{self.delimiter}"}]
 
         response = get_completion(messages_2)
         return response
-
 
 class plan_of_care:
     def __init__(self, post_date, delimiter="####"):
