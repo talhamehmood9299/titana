@@ -76,8 +76,7 @@ class cpt_code:
         return result
 
 class histroy_of_illness:
-    def __init__(self, key, post_date, delimiter="####"):
-        self.key = key
+    def __init__(self, post_date, delimiter="####"):
         self.post_data = post_date
         self.delimiter = delimiter
         result = self.final()  # Call the final() method and store the result
@@ -170,14 +169,7 @@ class histroy_of_illness:
         response = get_completion(messages_1)
         print(response)
 
-        # Split the text into lines
-        lines = response.split('\n')
-
-        # Extract the last line
-        history = lines[-1].strip()
-
-        return history
-    def combine_the_text(self, basic_data, history, template):
+    def combine_the_text(self, basic_data, history):
 
         system_2 = f"""
         You are a medical assistant and you job is to write a history of illness of the patient.
@@ -199,8 +191,6 @@ class histroy_of_illness:
                 ```{basic_data}```
                 the the patient history is delimited by triple dashes,
                 ---{history}---
-                other text is delimited by triple brackets.
-                {{{template}}}
                 and concluded with "No other medical concerns in today's appointment".
                 """
         few_shot_1 = """Write a history of illness of the patient based on the text that I will provide"""
@@ -221,15 +211,13 @@ class histroy_of_illness:
 
         response = get_completion(messages_2)
         return response
+
     def final(self):
         if "Type of visit: Lab/Radiology Review" in self.post_data:
             basic_data = self.get_basic_information()
 
             history = self.get_history()
-
-            template = get_templates(basic_data)
-
-            general = self.combine_the_text(basic_data, history, template)
+            general = self.combine_the_text(basic_data, history)
             lab = get_lab_results()
             final_response = f"{general}. {lab}"
 
@@ -268,12 +256,8 @@ class histroy_of_illness:
             basic_data = self.get_basic_information()
 
             history = self.get_history()
-
-            template = get_templates(basic_data)
-
-            general = self.combine_the_text(basic_data, history, template)
+            general = self.combine_the_text(basic_data, history)
             return general
-
 
 class plan_of_care:
     def __init__(self, post_date, delimiter="####"):
