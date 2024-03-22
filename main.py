@@ -22,18 +22,72 @@ class TextGenerationRequest(BaseModel):
     prompt: str
 
 def process_task(request: TextGenerationRequest, task: str):
+    global module
     provider_module = request.provider
     post_date = request.prompt
     logger.info(f"Processing task '{task}' with provider '{provider_module}'")
 
     try:
+        provider_modules = {
+            "Ahmad, S. Syed, MD": "Ahmad",
+            "Albana, S. Fouad, MD": "Albana",
+            "Anwar, F. Mohammad, MD": "Anwar",
+            "Ashraf, Mohammad, M.D.": "Ashraf",
+            "Bresch, David, MD": "Bresch",
+            "Brown, Harold, MD": "Brown",
+            "Chaudry, A. Ghazali, M.D.": "Chaudry",
+            "Chowdhury, Bhanwarlal, M.D.": "Chowdhury",
+            "Ewing Office, Pft/abi, MD": "Ewing",
+            "Gupta, Rajendra, MD": "Gupta",
+            "Hamilton Office, Pft/abi, MD": "Hamilton",
+            "Huq, U. Irfan, MD": "Huq",
+            "Integration, Behavioral Health, MD": "Integration",
+            "Khan, Basma, MD": "Khan",
+            "Lou, William, MD": "Lou",
+            "Management, Chronic Care, MD": "Management_Chronic",
+            "Management, Principal Care, MD": "Management_Principal",
+            "Matawan Office, Pft/abi, MD": "Matawan",
+            "Matthews-brown, R. Spring, MD": "Matthews",
+            "Memon, Mushtaq, MD": "Memon",
+            "Monitoring, Remote Patient, MD": "Monitoring_Remote_Patient",
+            "Monitoring, Remote Therapeutic, MD": "Monitoring_Remote_Therapeutic",
+            "Nadeem, Shahzinah, MD": "Nadeem",
+            "Raza, Rubina, MD": "Raza",
+            "Sheikh, U. Selim, MD": "Sheikh",
+            "Taboada, G. Javier, MD": "Taboada",
+            "Usmani, H. Qaisar, MD": "Usmani",
+            "Younus, W. Mohammad, MD": "Younus",
+            "Asiamah-asare, Vida-lynn, NP": "Asiamah",
+            "Atieh, Virginia, APN": "Atieh",
+            "Brown, Lance, PH": "Brown",
+            "Castillo, Kendie, NP/PA": "Castillo",
+            "Chavez, Hazel, NP": "Chavez",
+            "Dacosta-chambers, Sasha, FNP": "Dacosta",
+            "Diaz, Johannelda, NP": "Diaz",
+            "Dipietropolo, Lisa, PMHNP-BC": "Dipietropolo",
+            "Elshaikh, Barakat": "Elshaikh",
+            "Ghafoor, Sadia, DO": "Ghafoor",
+            "Huynh-nguyen, P. Anh, NP": "Huynh",
+            "Khatri, H. Arti, APN": "Khatri",
+            "Management, Chronic Pain, DO": "Management_Chronic",
+            "Medical, Azz, DO": "Medical_Azz",
+            "Meer, B. Shahid": "Meer_B",
+            "Navigator Visit, Suboxone, DO": "Navigator_Visit",
+            "Newsome, J. La-toya, NP": "Newsome",
+            "Oluwagbamila, Geralda, NP": "Oluwagbamila",
+            "Rogers, A. Stephanie, APN": "Rogers",
+            "Serzanin, M. Coleen, RN, MSN, Pmhnp-bc": "Serzanin",
+            "Viaje, Mabrigida, NP": "Viaje",
+        }
 
-        # Dynamically import the module
-        module = importlib.import_module(provider_module)
+        module_name = provider_modules.get(provider_module)
+        if module_name:
+            module = importlib.import_module(module_name)
+        else:
+            return {"response": "wrong provider entered"}
 
         # Dynamically get the task function from the module
         task_function = getattr(module, "task")
-
         # Call the task function passing the task string
         response = task_function(task, post_date)
 
