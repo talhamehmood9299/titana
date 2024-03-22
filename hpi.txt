@@ -1,31 +1,32 @@
 Hypertension:
-The patient has medical history of HTN. He denies h/a, dizziness, diaphoresis, n/v, fatigue, weakness, palpitations, leg cramps, peripheral edema, vision changes, chest pain and shortness of breath. He is currently on (medications). He is compliant with his medications. He denies any untoward side effects from his medications.
+the patient is following up on Hypertension and hyperlipidemia. The patient has been following dietry restrictions.  Denies headache, vision problems, and chest pain.
 
 Hyperlipidimea:
-The patient has medical history of HLD. He denies h/a, dizziness, diaphoresis, n/v, fatigue, weakness, palpitations, leg cramps, peripheral edema, vision changes, chest pain and shortness of breath. His blood pressure reading today is. He is currently on (medications). He is compliant with his medications and is requesting refills. He denies any untoward side effects from his medications.
+the patient is following up on Hypertension and hyperlipidemia. The patient has been following dietry restrictions.  Denies headache, vision problems, and chest pain.
 
 Diabetes:
-The patient presents for Diabetes follow up. He denies polydipsia, polyphagia and polyuria. He denies n/v/d, peripheral edema, vision changes, diaphoresis, tingling/numbness of the limbs, lesion on the feet, palpitations, chest pain and shortness of breath. 
+The patient presents for Diabetes follow up. He denies polydipsia, polyphagia and polyuria. He denies n/v/d,Â peripheral edema, vision changes, diaphoresis, tingling/numbness of the limbs, lesion on the feet, palpitations, chest pain and shortness of breath.Â 
 He is compliant with His medications and is requesting refills. He denies untoward side effects from the medication/s.
 
 Chronic Pain:
 The patient is complaining of chronic pain and he reports that he was unable to do daily life activities. He is asking for medications for pain.
 
 Anxiety:
-The patient is following up on Anxiety and continues on [medication] which is helping him with his symptoms. He is able to function and perform his ADL. He states he takes his medications regularly. He denies fatigue, body aches, n/v/d, and constipation. He denies chest pain and shortness of breath. He denies hallucinations, panic attacks, suicidal ideations, and dangerous ideations. He has a good appetite and sleep. He is requesting a prescription renewal of (-----).
-He does not report any other complications or side effects of any medications. 
+The patient complains of stress and anxiety for the last many months.
+The patient denies hurting herself or hurting others.
+The patient denies any form of thoughts of SI. 
 
 ADHD:
 following up on ADHD and continues on medications. The patient he is doing well on current dose and did not experience any side effects so far. Requesting for prescription renewal. Educated on the side effects of psychotropic agents including addiction or resistance. Has verbalized understanding.
 
-Asthma/COPD:
-The patient is f/u on COPD and has mild SOB with Wheezing. The patient need medication for it.
+Asthma:
+Pt complains of Asthma. Pt is using the Ventolin Inhaler with good control of her/his symptoms. Pt denies shortness of breath. Pt denies having a sore throat.
 
 GERD:
+The patient complains of a retrosternal burning sensation for the last many months. The patient has mild upper abdominal discomfort
 
 Insomnia:
- has problem initiating the sleep and maintaining it. Has been waking up many times during the night.
-
+The Patient complains of insomnia for the last many months. The Patient has a problem initiating sleep and maintaining it. The patient has been waking up many times during the night.
 
 STD:
 The patient denied any symptoms associated with STDs, such as genital itching, burning, pain, discharge, or sores.
@@ -37,5 +38,17 @@ He reports that he is having sinus congestions. Denies chills/fever.
 Opioid dependence:
 The patient has a history of opioid dependence. He is taking. He is compliant with treatment. He does not report any nausea, vomiting, or abdominal pain complaints. He is following up with Navigator services.
 
-Constipation
+Suboxone: 
+Pt has a history of opioid dependence. She/He is taking buprenorphine regularly. She/He is compliant with treatment. She/He  denies any complaints of nausea, vomiting, and abdominal pain. She/He  is not taking any illicit medications. She/He  is following up with Navigator services.
+
+Back pain: 
+The patient complains of back pain for the last many years. Back pain radiating towards legs. It is difficult to do daily activities.
+
+Depression: 
+Patient feels depressed and sometimes cries easily. Has no suicidal ideation. can not sleep at night, has loss of appetite, loss of interest in daily activities. complains of mood swings, irritibilaty.
+
+Diabetes mellitus: 
+The patient is following up on Diabetes mellitus type II. The patient has been taking medications regularly. Denies any excessive thirst, polyuria, or polyphagia.
+
+Constipation:
 Patient is here today with complaints of Constipation. Pt is doing well and stable.
