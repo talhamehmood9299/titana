@@ -74,8 +74,7 @@ class cpt_code:
         return result
 
 class histroy_of_illness:
-    def __init__(self, key, post_date, delimiter="####"):
-        self.key = key
+    def __init__(self, post_date, delimiter="####"):
         self.post_data = post_date
         self.delimiter = delimiter
         result = self.final()  # Call the final() method and store the result
@@ -111,7 +110,7 @@ class histroy_of_illness:
         to "doctor dictation" and related to mentioned medications. In cases where the doctor's dictation is absent, rely solely \
         on mentioned medications. It is mandatory to write the reason of extraction.
         Don't extract the disease or disorder if no medication mentioned directly related to this disorder.
-        If the "doctor dictation" and any medication is not mentioned in the provided text than extract only first five 
+        If the "doctor dictation" and any medication is not mentioned in the provided text than extract only first five
         disease or disorders. In this case the sentence should be start from "The previous history of the patient is "
         Don't add the BMI in the output.
         Write the short form of disease or disorders. Don't write the complete name.
@@ -122,7 +121,7 @@ class histroy_of_illness:
       """
         prompt_1 = f"""
         Based on the doctor's dictation and mentioned medications, Choose the diseases or disorders that are directly\
-        related to the doctor's dictation and mentioned medications from the text 
+        related to the doctor's dictation and mentioned medications from the text
         delimited by triple backticks.
         Don't add the BMI in the output.
         At the end it is necessary to write the related disease or disorders in one line.
@@ -131,13 +130,13 @@ class histroy_of_illness:
 
         few_shot_user_1 = """
         Based on the doctor's dictation and mentioned medications, Choose the diseases or disorders that are directly\
-        related to the doctor's dictation and mentioned medications from the text 
+        related to the doctor's dictation and mentioned medications from the text
         delimited by triple backticks.
         Don't add the BMI in the output.
         At the end it is necessary to write the related disease or disorders in one line.
             """
 
-        few_shot_assistant_1 = """ 
+        few_shot_assistant_1 = """
         1) Sleep deprivation - related to the medication hydroxyzine HCl which is used for allergies and sleep.
         2) Insomnia - related to the medication hydroxyzine HCl which is used for sleep.
         3) Angina pectoris - related to the medication Klonopin which is used for anxiety and panic disorders.
@@ -146,14 +145,14 @@ class histroy_of_illness:
          """
         few_shot_user_2 = """
         Based on the doctor's dictation and mentioned medications, Choose the diseases or disorders that are directly\
-        related to the doctor's dictation and mentioned medications from the text 
+        related to the doctor's dictation and mentioned medications from the text
         delimited by triple backticks.
         Don't add the BMI in the output.
         At the end it is necessary to write the related disease or disorders in one line.
             """
 
-        few_shot_assistant_2 = """ 
-        1) Anxiety disorder- related to the doctor's dictation which is mentioned in the text. 
+        few_shot_assistant_2 = """
+        1) Anxiety disorder- related to the doctor's dictation which is mentioned in the text.
         The patient disease or disorder is Anxiety.
          """
 
@@ -167,14 +166,6 @@ class histroy_of_illness:
         ]
         response = get_completion(messages_1)
         print(response)
-
-        # Split the text into lines
-        lines = response.split('\n')
-
-        # Extract the last line
-        history = lines[-1].strip()
-
-        return history
 
     def final(self):
         basic_data = self.get_basic_information()
@@ -198,16 +189,26 @@ class histroy_of_illness:
                                     ---{history}---
                                     and concluded with "No other medical concerns in today's appointment".
                                     """
-        few_shot_1 = """Write a history of illness of the patient based on the text that I will provide"""
+        few_shot_1 = """Laura Brendon, 63 F, prsnt fr flw up. hx of anxty/dprsn, chrnc pain. c/o tooth ach."""
         result_1 = """\
-                            Calvin Mcrae, a 71-year-old male, came in for a follow-up visit. \n \
-                            He has a medical history of Hypertension (HTN), Hypothyroidism, and a history of cellulitis of the face.\n \
-                            He complains of the upper lip infection.\n \
+                            Laura Brendon, 63-year-old female is here today for a follow-up appointment. \n \
+                            Patient has a history of anxiety/depression and chronic pain. \n \
+                            Pt complains of tooth ache. \n \
                             **No other medical concerns in today's appointment**.\n \
                             """
+        few_shot_2 = """57, flw up. hx of anxty. rqst mdctn refil."""
+        result_2 = """\
+                            A 57-year-old patient is here for a follow-up appointment. \n \
+                            The patient has a history of anxiety. \n \
+                            The patient requested a refill of medication. \n \
+                            **No other medical concerns in today's appointment**.\n \
+                            """
+
         messages_2 = [{'role': 'system', 'content': system_2},
                       {'role': 'user', 'content': f"{self.delimiter}{few_shot_1}{self.delimiter}"},
                       {'role': 'assistant', 'content': result_1},
+                      {'role': 'user', 'content': f"{self.delimiter}{few_shot_2}{self.delimiter}"},
+                      {'role': 'assistant', 'content': result_2},
                       {'role': 'user', 'content': f"{self.delimiter}{prompt_2}{self.delimiter}"}]
 
         response = get_completion(messages_2)
