@@ -1,10 +1,10 @@
 import openai
-from extra_functions import extract_text, get_completion, get_dictation
 from labs_radiology import get_lab_results
+from extra_functions import extract_text, get_completion, get_dictation, clear_lines_above_and_containing
 
 def task(task_string, post_date):
     if "Task 1:" == task_string:
-        instance = histroy_of_illness(post_date)
+        instance = history_of_illness(post_date)
         response = instance.result
     elif "Task 2:" == task_string:
         instance = plan_of_care(post_date)
@@ -73,9 +73,8 @@ class cpt_code:
 
         return result
 
-class histroy_of_illness:
-    def __init__(self, key, post_date, delimiter="####"):
-        self.key = key
+class history_of_illness:
+    def __init__(self, post_date, delimiter="####"):
         self.post_data = post_date
         self.delimiter = delimiter
         result = self.final()  # Call the final() method and store the result
@@ -178,37 +177,42 @@ class histroy_of_illness:
 
     def final(self):
         basic_data = self.get_basic_information()
+
         history = self.get_history()
+
+        template = "Nothing"
         system_2 = f"""
-                            You are a medical assistant and you job is to write a history of illness of the patient.
-                            The text contains the patient demographics, History of  disease or disorder, Medications and Doctor dictation.
-                            Please write a History of illness based on the text delimited by the triple backticks.lets think step by step.
-                            First line contains the patient demographics and provided 'history line'. Don't add the medications in this line.
-                            Second line contains the patient current complains.
-                            It is necessary to concluded with "**No other medical concerns in today's appointment**".
-                            Don't add the headings.
-                            Don't repeat the lines.
-                            Don't write more than 4 lines.
-                            Write lines separately.
-                        """
+				You are a medical assistant and you job is to write a history of illness of the patient.
+				The text contains the patient demographics, History of  disease or disorder, Medications and Doctor dictation.
+				Please write a History of illness based on the text delimited by the triple backticks.lets think step by step.
+				First line contains the patient demographics and provided 'history line'. Don't add the medications in this line.
+				Second line contains the patient current complains.
+				It is necessary to concluded with "**No other medical concerns in today's appointment**".
+				Don't add the headings.
+				Don't repeat the lines.
+				Don't write more than 4 lines.
+				Write lines separately.
+			"""
         prompt_2 = f"""
-                                    Please write a History of illness in based on the text delimited by the triple backticks,\
-                                    ```{basic_data}```
-                                    the the patient history is delimited by triple dashes,
-                                    ---{history}---
-                                    and concluded with "No other medical concerns in today's appointment".
-                                    """
+						Please write a History of illness in based on the text delimited by the triple backticks,\
+						```{basic_data}```
+						the the patient history is delimited by triple dashes,
+						---{history}---
+						other text is delimited by triple brackets.
+						{{{template}}}
+						and concluded with "No other medical concerns in today's appointment".
+						"""
         few_shot_1 = """Write a history of illness of the patient based on the text that I will provide"""
         result_1 = """\
-                            Calvin Mcrae, a 71-year-old male, came in for a follow-up visit. \n \
-                            He has a medical history of Hypertension (HTN), Hypothyroidism, and a history of cellulitis of the face.\n \
-                            He complains of the upper lip infection.\n \
-                            **No other medical concerns in today's appointment**.\n \
-                            """
+				Calvin Mcrae, a 71-year-old male, came in for a follow-up visit. \n \
+				He has a medical history of Hypertension (HTN), Hypothyroidism, and a history of cellulitis of the face.\n \
+				He complains of the upper lip infection.\n \
+				**No other medical concerns in today's appointment**.\n \
+				"""
         messages_2 = [{'role': 'system', 'content': system_2},
-                      {'role': 'user', 'content': f"{self.delimiter}{few_shot_1}{self.delimiter}"},
-                      {'role': 'assistant', 'content': result_1},
-                      {'role': 'user', 'content': f"{self.delimiter}{prompt_2}{self.delimiter}"}]
+					  {'role': 'user', 'content': f"{self.delimiter}{few_shot_1}{self.delimiter}"},
+					  {'role': 'assistant', 'content': result_1},
+					  {'role': 'user', 'content': f"{self.delimiter}{prompt_2}{self.delimiter}"}]
 
         response = get_completion(messages_2)
         return response
@@ -216,96 +220,161 @@ class histroy_of_illness:
 
 class plan_of_care:
     def __init__(self, post_date, delimiter="####"):
-        self.post_data = post_date
+        self.post_date = post_date
         self.delimiter = delimiter
-        medication_start = post_date.find("cutformhere:") + len("cutformhere:")
-        medication_end = post_date.find("Doctor dictation")
-        self.medications_text = post_date[medication_start:medication_end].strip()
-        dictation_start = post_date.find("Doctor dictation:") + len("Doctor dictation:")
-        doctor_semi = post_date[dictation_start:].strip()
-        self.diagnosis = extract_text(doctor_semi)
-        self.dictation_final = get_dictation(doctor_semi)
         result = self.final()
         self.result = result
 
     def template_1(self):
         prompt = f"""
-            You are a medical assistant. Your job is to organize the medications with the diseases and disorders mentioned in the text by following the \
-            rules listed below. The medications and disease or disorder will be provided. Let’s think step by step.
-            Rules for this task:
-            1) First extract the one relatable disease or disorder for the medication if mentioned in the provided text, and \
-            than organize the medication with the associated disease and disorder mentioned in the provided text.
-            2) Only organizes the medication with one disease or disorder. But it is possible that multiple medications \
-            organize with one disease or disorder if prescribed for same therapeutic use.
-            3) Include only medication names, dosage, and SIG (instructions for use).
-            4) Don't add the disease or disorder in the output if no medication is organized with that disease or disorder.
-            5) Don't add Start Date, Prescribe Date, End Date and Qty of the medication.
-            6) If the disease and disorder is not organize with the medication, than don't add this disease or disorder in the \
-            final output
-            7) Check If the medication is not grouped with the disease or disorder, then add it to \
-            the "Other Medications" section.
-            8) At the end add a concise plan of care with 4 to 5 lines for disease or disorder that i will provide.
-            9) Utilize double asterisks for all headings.
-            10) Utilize double asterisks for all "medications" with their "SIG".
-            11) Don't suggest any disease, disorder or symptoms for any medication. 
-            12) If the prompt contain "Other medications". please write these medications at the end with the heading.
-            13) Don't add heading of "Plan of care:"
-            14) Don't add ICD-10 codes.
-            15) It is Mandatory to conclude the plan of care with this line "Follow-up as scheduled"
-            """
+        You job is to organize the medications with the diseases and disorders mentioned in the text by following the \
+        rules listed below. The medications and disease or disorder will be provided. Let’s think step by step.
+        
+        Rules for this task:
+        1) Utilize double asterisks for all headings.
+        2) First find the most relatable disease or disorder for the medication if mentioned in the provided text, and \
+        than organize the medication with the associated disease and disorder mentioned in the provided text.
+        3) Only organizes the medication with one disease or disorder. But it is possible that multiple medications \
+        organize with one disease or disorder if prescribed for same therapeutic use.
+        4) Include only medication names, dosage, and SIG (instructions for use).
+        5) Don't add ICD-10 codes.
+        6) Don't add Start Date, Prescribe Date, End Date and Qty of the medication.
+        7) If the disease and disorder is not grouped with the medication, than add "No medication mentioned for this \
+        condition" under the disease or disorder.
+        8) At the end check If the medication is not grouped with the disease or disorder, then add it to \
+        the "Other Medications" section.
+        
+        """
+
+        few_shot_user_2 = "Organize the medication with the associated disease and disorder mentioned in the provided text."
+        few_shot_assistant_2 = "**cough:\n" \
+                               "- Promethazine 6.25 mg/5 mL oral syrup. Sig: Take 5 milliliters (6.25MG) by oral route HS \
+                               PRN.**\n" \
+                               "**Asthma\n" \
+                               "- No medication mentioned for this condition.**\n" \
+                               "**Other Medications:\n" \
+                               "- Ascorbic Acid (Vitamin C) 500 mg Tablet\n, Sig: Take 1 tablet (500mg) by oral route\
+                                once daily.**"
+        few_shot_user_3 = "organize the medication with the associated disease and disorder mentioned in the provided text."
+        few_shot_assistant_3 = "**Dorsalgia, unspecified:\n" \
+                               "- cyclobenzaprine 10 mg tablet, Sig: take 1 tablet(10MG)  by oral route bid.**\n" \
+                               "**Cough\n" \
+                               "- No medication mentioned for this condition.**"
+        few_shot_user_4 = "organize the medication with the associated disease and disorder mentioned in the provided text."
+        few_shot_assistant_4 = "**Gastro-esophageal reflux disease without esophagitis:\n" \
+                               "- Simethicone 80 mg chewable tablet Sig: One Tablet Daily q6h.**\n" \
+                               "**Dorsalgia\n" \
+                               "- No medication mentioned for this condition.**"
+        few_shot_user_5 = "organize the medication with the associated disease and disorder mentioned in the provided text."
+        few_shot_assistant_5 = "**Pain:\n" \
+                               "- Tramadol 50 mg Tablet. Sig: Take 1 tablet (50MG) by oral route as needed twice daily.**\n" \
+                               "**Dorsalgia, unspecified:\n" \
+                               "- No medication mentioned for this condition. **"
+        few_shot_user_6 = "organize the medication with the associated disease and disorder mentioned in the provided text."
+        few_shot_assistant_6 = "**Asthma\n" \
+                               "- Ventolin HFA 90 mcg/actuation aerosol inhaler. Sig: 2 puffs every 6 hours as needed.\n" \
+                               "- Albuterol sulfate 2.5 mg/3 mL (0.083%) solution for nebulization .**\n" \
+                               "**Dorsalgia, unspecified:\n" \
+                               "- No medication mentioned for this condition. **"
+
+        delimiter = "####"
         user_text = f"""
-           Write a concise plan of care with 4 to 5 lines for disease or disorder with the medication and the doctor dictation.\
-           The disease or disorders are delimited by triple backticks.
-           '''{self.diagnosis}'''
+        Please match each medication with the most relevant disease or disorder it is associated with, mentioned in the\
+        provided text delimited by triple backticks, adhering to the provided rules.\
+        At the end check If the medications is not grouped, then add medication to the "Other Medications" section.
+         
+         '''{self.post_date}'''
+        
+        """
+        print(user_text)
+        messages = [{'role': 'system', 'content': prompt},
+                    {'role': 'user', 'content': f"{delimiter}{few_shot_user_2}{delimiter}"},
+                    {'role': 'assistant', 'content': few_shot_assistant_2},
+                    {'role': 'user', 'content': f"{delimiter}{few_shot_user_3}{delimiter}"},
+                    {'role': 'assistant', 'content': few_shot_assistant_3},
+                    {'role': 'user', 'content': f"{delimiter}{few_shot_user_4}{delimiter}"},
+                    {'role': 'assistant', 'content': few_shot_assistant_4},
+                    {'role': 'user', 'content': f"{delimiter}{few_shot_user_5}{delimiter}"},
+                    {'role': 'assistant', 'content': few_shot_assistant_5},
+                    {'role': 'user', 'content': f"{delimiter}{few_shot_user_6}{delimiter}"},
+                    {'role': 'assistant', 'content': few_shot_assistant_6},
+                    {'role': 'user', 'content': f"{delimiter}{user_text}{delimiter}"}]
 
-           The medications are delimited by triple dashes.
-           ---{self.medications_text}---
+        response = get_completion(messages)
+        print(response)
 
-           The doctor dictation is delimited by triple hashtags.
-           ###{self.dictation_final}###
-            """
+        new_text = clear_lines_above_and_containing(response, "No medication mentioned for this condition")
+        print(new_text)
+
+        prompt_5 = f"""
+        
+            Your task is help medical assistant to add a concise plan of care with 4 to 5 lines for disease or disorder \
+            that i will provide.
+            Utilize double asterisks for all headings.
+            Utilize double asterisks for all "medications" with their "SIG".
+            Don't suggest any disease, disorder or symptoms for any medication. 
+            If the prompt contain "Other medications". please write these medications at the end with the heading.
+            Don't add heading of "Plan of care:"
+            It is Mandatory to conclude the plan of care with this line "Follow-up as scheduled"
+            
+    """
+        user_text = f"""
+        
+           Write a concise plan of care with 4 to 5 lines for disease or disorder if the medication that is the only\
+            mentioned in the text delimited by triple backticks is linked with it.
+           
+              '''{new_text}'''
+        
+        """
+
+        delimiter = "####"
 
         few_shot_user_1 = """
-         Write a concise plan of care with 4 to 5 lines for disease or disorder if the medication that is the only\
-         mentioned in the text delimited by triple backticks is organize with it.
-         Don't write the disease or disorder in the output if "no medication is mentioned in the text" for the disease or disorder.
-            """
+        **Asthma, Unspecified:
+        - Ventolin HFA 90 mcg/actuation aerosol inhaler. Sig: 2 puffs every 6 hours as needed.
+        - Breo Ellipta 100 mcg-25 mcg/dose powder for inhalation. Sig: 1 puff daily.**
+    
+        **Other Medications:
+        - Ascorbic Acid (Vitamin C) 500 mg Tablet\n, Sig: Take 1 tablet (500mg) by oral route once daily.**
+        """
         few_shot_assistant_1 = """
-        **Asthma**:
+    **Asthma, Unspecified:
+    
+        - Ventolin HFA 90 mcg/actuation aerosol inhaler. Sig: 2 puffs every 6 hours as needed.
+        - Breo Ellipta 100 mcg-25 mcg/dose powder for inhalation. Sig: 1 puff daily.**
+        - Avoid triggers that may worsen cough variant asthma, such as cold air, smoke, and allergens.
+        - Use a peak flow meter to monitor lung function and adjust medication use as needed.
+        - Follow an asthma action plan provided by healthcare provider.
+        - If symptoms persist or worsen, consult with healthcare provider for further evaluation and potential adjustment \
+        of treatment plan.
+        
+    **Gastro-esophageal reflux disease without esophagitis:
+    
+        - Simethicone 80 mg chewable tablet, Sig: One Tablet Daily q6h.**
+        - Avoid trigger foods and beverages that can worsen symptoms, such as spicy foods, citrus fruits, and caffeine.
+        - Eat smaller, more frequent meals and avoid lying down immediately after eating.
+        - Elevate the head of the bed to reduce nighttime reflux.
+        - If symptoms persist or worsen, consult with your healthcare provider for further evaluation and potential \
+        alternative treatment options.
+        
+    **Other Medications:
+    
+        - Ascorbic Acid (Vitamin C) 500 mg Tablet\n, Sig: Take 1 tablet (500mg) by oral route once daily.**
+            
+    **Follow-up as scheduled**
+                """
 
-            - **Ventolin HFA 90 mcg/actuation aerosol inhaler. Sig: 2 puffs every 6 hours as needed.**
-            - **Breo Ellipta 100 mcg-25 mcg/dose powder for inhalation. Sig: 1 puff daily.**
-            - Avoid triggers that may worsen cough variant asthma, such as cold air, smoke, and allergens.
-            - Use a peak flow meter to monitor lung function and adjust medication use as needed.
-            - Follow an asthma action plan provided by healthcare provider.
-            - If symptoms persist or worsen, consult with healthcare provider for further evaluation and potential adjustment \
-            of treatment plan.
-        **Gastro-esophageal reflux disease:
-            - **Simethicone 80 mg chewable tablet, Sig: One Tablet Daily q6h.**
-            - Avoid trigger foods and beverages that can worsen symptoms, such as spicy foods, citrus fruits, and caffeine.
-            - Eat smaller, more frequent meals and avoid lying down immediately after eating.
-            - Elevate the head of the bed to reduce nighttime reflux.
-            - If symptoms persist or worsen, consult with your healthcare provider for further evaluation and potential \
-            alternative treatment options.
-        **Other Medications**:
-            - **Ascorbic Acid (Vitamin C) 500 mg Tablet\n, Sig: Take 1 tablet (500mg) by oral route once daily.**
-        **Follow-up as scheduled**
-                    """
-
-        messages = [{'role': 'system', 'content': prompt},
-                    {'role': 'user', 'content': f"{self.delimiter}{few_shot_user_1}{self.delimiter}"},
+        messages = [{'role': 'system', 'content': prompt_5},
+                    {'role': 'user', 'content': f"{delimiter}{few_shot_user_1}{delimiter}"},
                     {'role': 'assistant', 'content': few_shot_assistant_1},
-                    {'role': 'user', 'content': f"{self.delimiter}{user_text}{self.delimiter}"}]
+                    {'role': 'user', 'content': f"{delimiter}{user_text}{delimiter}"}]
 
         response_5 = get_completion(messages)
 
         return response_5
 
-
     def final(self):
-
         response = self.template_1()
-
         return response
 
 
@@ -476,6 +545,3 @@ class physical_exam:
         else:
             "Physical exam for this is not developed"
         return response_1
-
-
-
