@@ -1,11 +1,10 @@
 import openai
 from labs_radiology import get_lab_results
-from extra_functions import extract_text, get_completion,get_dictation
-from hpi import get_templates
+from extra_functions import extract_text, get_completion, get_dictation, clear_lines_above_and_containing
 
 def task(task_string, post_date):
     if "Task 1:" == task_string:
-        instance = histroy_of_illness(post_date)
+        instance = history_of_illness(post_date)
         response = instance.result
     elif "Task 2:" == task_string:
         instance = plan_of_care(post_date)
@@ -74,9 +73,8 @@ class cpt_code:
 
         return result
 
-class histroy_of_illness:
-    def __init__(self, key, post_date, delimiter="####"):
-        self.key = key
+class history_of_illness:
+    def __init__(self, post_date, delimiter="####"):
         self.post_data = post_date
         self.delimiter = delimiter
         result = self.final()  # Call the final() method and store the result
@@ -176,14 +174,14 @@ class histroy_of_illness:
         history = lines[-1].strip()
 
         return history
-    
+
     def final(self):
         basic_data = self.get_basic_information()
 
-		history = self.get_histroy()
+        history = self.get_history()
 
-		template = "Nothing"
-		system_2 = f"""
+        template = "Nothing"
+        system_2 = f"""
 				You are a medical assistant and you job is to write a history of illness of the patient.
 				The text contains the patient demographics, History of  disease or disorder, Medications and Doctor dictation.
 				Please write a History of illness based on the text delimited by the triple backticks.lets think step by step.
@@ -195,7 +193,7 @@ class histroy_of_illness:
 				Don't write more than 4 lines.
 				Write lines separately.
 			"""
-		prompt_2 = f"""
+        prompt_2 = f"""
 						Please write a History of illness in based on the text delimited by the triple backticks,\
 						```{basic_data}```
 						the the patient history is delimited by triple dashes,
@@ -204,20 +202,20 @@ class histroy_of_illness:
 						{{{template}}}
 						and concluded with "No other medical concerns in today's appointment".
 						"""
-		few_shot_1 = """Write a history of illness of the patient based on the text that I will provide"""
-		result_1 = """\
+        few_shot_1 = """Write a history of illness of the patient based on the text that I will provide"""
+        result_1 = """\
 				Calvin Mcrae, a 71-year-old male, came in for a follow-up visit. \n \
 				He has a medical history of Hypertension (HTN), Hypothyroidism, and a history of cellulitis of the face.\n \
 				He complains of the upper lip infection.\n \
 				**No other medical concerns in today's appointment**.\n \
 				"""
-		messages_2 = [{'role': 'system', 'content': system_2},
+        messages_2 = [{'role': 'system', 'content': system_2},
 					  {'role': 'user', 'content': f"{self.delimiter}{few_shot_1}{self.delimiter}"},
 					  {'role': 'assistant', 'content': result_1},
 					  {'role': 'user', 'content': f"{self.delimiter}{prompt_2}{self.delimiter}"}]
 
-		response = get_completion(messages_2)
-		return response
+        response = get_completion(messages_2)
+        return response
 
 
 class plan_of_care:
