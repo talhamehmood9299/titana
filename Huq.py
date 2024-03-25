@@ -1,22 +1,23 @@
 import openai
-from extra_functions import extract_text, get_completion, get_dictation
 from labs_radiology import get_lab_results
+from extra_functions import extract_text, get_completion,get_dictation
+from hpi import get_templates
 
-def task(post_data):
-    if "Task 1:" in post_data:
-        instance = histroy_of_illness(openai.api_key, post_data)
+def task(task_string, post_date):
+    if "Task 1:" == task_string:
+        instance = histroy_of_illness(post_date)
         response = instance.result
-    elif "Task 2:" in post_data:
-        instance = plan_of_care(post_data)
+    elif "Task 2:" == task_string:
+        instance = plan_of_care(post_date)
         response = instance.result
-    elif "Task 3:" in post_data:
-        instance = cpt_code(openai.api_key, post_data)
+    elif "Task 3:" == task_string:
+        instance = cpt_code(post_date)
         response = instance.result
-    elif "Task 4:" in post_data:
-        instance = physical_exam(post_data)
+    elif "Task 4:" == task_string:
+        instance = physical_exam(post_date)
         response = instance.result
-    elif "Task 5:" in post_data:
-        instance = review_of_system(post_data)
+    elif "Task 5:" == task_string:
+        instance = review_of_system(post_date)
         response = instance.result
     else:
         response = "Task is not justified"
@@ -175,208 +176,207 @@ class histroy_of_illness:
         history = lines[-1].strip()
 
         return history
-
+    
     def final(self):
         basic_data = self.get_basic_information()
-        history = self.get_history()
-        system_2 = f"""
-                            You are a medical assistant and you job is to write a history of illness of the patient.
-                            The text contains the patient demographics, History of  disease or disorder, Medications and Doctor dictation.
-                            Please write a History of illness based on the text delimited by the triple backticks.lets think step by step.
-                            First line contains the patient demographics and provided 'history line'. Don't add the medications in this line.
-                            Second line contains the patient current complains.
-                            It is necessary to concluded with "**No other medical concerns in today's appointment**".
-                            Don't add the headings.
-                            Don't repeat the lines.
-                            Don't write more than 4 lines.
-                            Write lines separately.
-                        """
-        prompt_2 = f"""
-                                    Please write a History of illness in based on the text delimited by the triple backticks,\
-                                    ```{basic_data}```
-                                    the the patient history is delimited by triple dashes,
-                                    ---{history}---
-                                    and concluded with "No other medical concerns in today's appointment".
-                                    """
-        few_shot_1 = """Write a history of illness of the patient based on the text that I will provide"""
-        result_1 = """\
-                            Calvin Mcrae, a 71-year-old male, came in for a follow-up visit. \n \
-                            He has a medical history of Hypertension (HTN), Hypothyroidism, and a history of cellulitis of the face.\n \
-                            He complains of the upper lip infection.\n \
-                            **No other medical concerns in today's appointment**.\n \
-                            """
-        messages_2 = [{'role': 'system', 'content': system_2},
-                      {'role': 'user', 'content': f"{self.delimiter}{few_shot_1}{self.delimiter}"},
-                      {'role': 'assistant', 'content': result_1},
-                      {'role': 'user', 'content': f"{self.delimiter}{prompt_2}{self.delimiter}"}]
 
-        response = get_completion(messages_2)
-        return response
+		history = self.get_histroy()
+
+		template = "Nothing"
+		system_2 = f"""
+				You are a medical assistant and you job is to write a history of illness of the patient.
+				The text contains the patient demographics, History of  disease or disorder, Medications and Doctor dictation.
+				Please write a History of illness based on the text delimited by the triple backticks.lets think step by step.
+				First line contains the patient demographics and provided 'history line'. Don't add the medications in this line.
+				Second line contains the patient current complains.
+				It is necessary to concluded with "**No other medical concerns in today's appointment**".
+				Don't add the headings.
+				Don't repeat the lines.
+				Don't write more than 4 lines.
+				Write lines separately.
+			"""
+		prompt_2 = f"""
+						Please write a History of illness in based on the text delimited by the triple backticks,\
+						```{basic_data}```
+						the the patient history is delimited by triple dashes,
+						---{history}---
+						other text is delimited by triple brackets.
+						{{{template}}}
+						and concluded with "No other medical concerns in today's appointment".
+						"""
+		few_shot_1 = """Write a history of illness of the patient based on the text that I will provide"""
+		result_1 = """\
+				Calvin Mcrae, a 71-year-old male, came in for a follow-up visit. \n \
+				He has a medical history of Hypertension (HTN), Hypothyroidism, and a history of cellulitis of the face.\n \
+				He complains of the upper lip infection.\n \
+				**No other medical concerns in today's appointment**.\n \
+				"""
+		messages_2 = [{'role': 'system', 'content': system_2},
+					  {'role': 'user', 'content': f"{self.delimiter}{few_shot_1}{self.delimiter}"},
+					  {'role': 'assistant', 'content': result_1},
+					  {'role': 'user', 'content': f"{self.delimiter}{prompt_2}{self.delimiter}"}]
+
+		response = get_completion(messages_2)
+		return response
 
 
 class plan_of_care:
     def __init__(self, post_date, delimiter="####"):
-        self.post_data = post_date
+        self.post_date = post_date
         self.delimiter = delimiter
-        medication_start = post_date.find("cutformhere:") + len("cutformhere:")
-        medication_end = post_date.find("Doctor dictation")
-        self.medications_text = post_date[medication_start:medication_end].strip()
-        dictation_start = post_date.find("Doctor dictation:") + len("Doctor dictation:")
-        doctor_semi = post_date[dictation_start:].strip()
-        self.diagnosis = extract_text(doctor_semi)
-        self.dictation_final = get_dictation(doctor_semi)
         result = self.final()
         self.result = result
 
-    def template_4(self):
-        prompt = """
-          you are a medical assistant. You job is to write a plan of care by following the mentioned rules. let's think step by step.
-              1) First extract the only one associate disease or disorder for each medication if mentioned in the provided text.
-              2) And than write all the medications in the first line separated with comma and write associated disease and disorder with lines plan of care and medication mentioned in the provided text.
-              3) Write the one name of the disease or disorder as the heading and than write lines of plan of care in the form of paragraph.
-              4) Write the short form of disease or disorders
-              5) Include only medication names. Don't add dosage, and SIG (instructions for use).
-              6) Don't add ICD-10 codes.
-              7) Don't add Start Date, Prescribe Date, End Date and Qty of the medication.
-              8) If the disease and disorder is not related with the medication, than don't add the disease or disorder in the \
-              output.
-              9) Add a concise plan of care with 4 to 5 lines for disease or disorder that i will provide.
-              10) Utilize double asterisks for all headings.
-              11) Utilize double asterisks for all "medications".
-              12) Don't suggest any disease, disorder or symptoms for any medication. 
-              13) Don't add heading of "Plan of care, Disease or disorder and "Medication".
-              14) Don't add the disease or disorder in the output if no medication is mentioned in the provided text.
-              15) If no medication is mentioned in the provided text than return these lines and also add at the end of every output if the medication is available.
-              "**Compliance** with medications has been stressed.
-              Continue other medications.
-              Side effects, risks, and complications were clearly explained and the patient verbalized understanding and was given the opportunity to ask questions.
-              Relaxation techniques were discussed, stress avoidance was reviewed, and medication and yoga were encouraged."
-              16) It is Mandatory to conclude the plan of care with this line "Follow-up as scheduled"
-          """
+    def template_1(self):
+        prompt = f"""
+        You job is to organize the medications with the diseases and disorders mentioned in the text by following the \
+        rules listed below. The medications and disease or disorder will be provided. Let’s think step by step.
+        
+        Rules for this task:
+        1) Utilize double asterisks for all headings.
+        2) First find the most relatable disease or disorder for the medication if mentioned in the provided text, and \
+        than organize the medication with the associated disease and disorder mentioned in the provided text.
+        3) Only organizes the medication with one disease or disorder. But it is possible that multiple medications \
+        organize with one disease or disorder if prescribed for same therapeutic use.
+        4) Include only medication names, dosage, and SIG (instructions for use).
+        5) Don't add ICD-10 codes.
+        6) Don't add Start Date, Prescribe Date, End Date and Qty of the medication.
+        7) If the disease and disorder is not grouped with the medication, than add "No medication mentioned for this \
+        condition" under the disease or disorder.
+        8) At the end check If the medication is not grouped with the disease or disorder, then add it to \
+        the "Other Medications" section.
+        
+        """
 
+        few_shot_user_2 = "Organize the medication with the associated disease and disorder mentioned in the provided text."
+        few_shot_assistant_2 = "**cough:\n" \
+                               "- Promethazine 6.25 mg/5 mL oral syrup. Sig: Take 5 milliliters (6.25MG) by oral route HS \
+                               PRN.**\n" \
+                               "**Asthma\n" \
+                               "- No medication mentioned for this condition.**\n" \
+                               "**Other Medications:\n" \
+                               "- Ascorbic Acid (Vitamin C) 500 mg Tablet\n, Sig: Take 1 tablet (500mg) by oral route\
+                                once daily.**"
+        few_shot_user_3 = "organize the medication with the associated disease and disorder mentioned in the provided text."
+        few_shot_assistant_3 = "**Dorsalgia, unspecified:\n" \
+                               "- cyclobenzaprine 10 mg tablet, Sig: take 1 tablet(10MG)  by oral route bid.**\n" \
+                               "**Cough\n" \
+                               "- No medication mentioned for this condition.**"
+        few_shot_user_4 = "organize the medication with the associated disease and disorder mentioned in the provided text."
+        few_shot_assistant_4 = "**Gastro-esophageal reflux disease without esophagitis:\n" \
+                               "- Simethicone 80 mg chewable tablet Sig: One Tablet Daily q6h.**\n" \
+                               "**Dorsalgia\n" \
+                               "- No medication mentioned for this condition.**"
+        few_shot_user_5 = "organize the medication with the associated disease and disorder mentioned in the provided text."
+        few_shot_assistant_5 = "**Pain:\n" \
+                               "- Tramadol 50 mg Tablet. Sig: Take 1 tablet (50MG) by oral route as needed twice daily.**\n" \
+                               "**Dorsalgia, unspecified:\n" \
+                               "- No medication mentioned for this condition. **"
+        few_shot_user_6 = "organize the medication with the associated disease and disorder mentioned in the provided text."
+        few_shot_assistant_6 = "**Asthma\n" \
+                               "- Ventolin HFA 90 mcg/actuation aerosol inhaler. Sig: 2 puffs every 6 hours as needed.\n" \
+                               "- Albuterol sulfate 2.5 mg/3 mL (0.083%) solution for nebulization .**\n" \
+                               "**Dorsalgia, unspecified:\n" \
+                               "- No medication mentioned for this condition. **"
+
+        delimiter = "####"
         user_text = f"""
-             Write a concise plan of care with 4 to 5 lines for disease or disorder if the related medication and the doctor dication is linked with it.
-             It is mandatory to write only one heading of disease or disorder for one mentioned medication.
-             Don't add the disease or disorder in the output if no medication is mentioned in the provided text.
-             The disease or disorders are delimited by triple backticks.
-             '''{self.diagnosis}'''
-
-             The medications are delimited by triple dashes.
-             ---{self.medications_text}---
-
-             The doctor dictation is delimited by triple hashtags.
-             ###{self.dictation_final}###
-              """
-        few_shot_user_1 = """
-          Write a plan of care. Don't add the output in the future responses. 
-          write only one heading of disease or disorder for one mentioned medication.
-
-          """
-        few_shot_user_2 = """
-          Write a plan of care. Don't add the output in the future responses.
-          Write only one heading of disease or disorder for one mentioned medication.
-          """
-        few_shot_assistant_1 = """
-          Continue with metformin and levothyroxine.
-          **Hyperlipidemia**: Dietary instruction about hyperlipidemia given to the patient. Eat a diet low in saturated and trans fats. Include lots of fruits, vegetables, beans, nuts, whole grains, and fish regularly into your diet. Stop eating red meat and processed meats like bacon, sausage, and cold cuts. Drink skim or low-fat milk.
-          **GERD**: Recommended to eat slowly, chew well every bite for at least 20-25 times before swallowing. Do not talk, read or watch TV while eating. Eat small portions, frequently, at least every 3-h. No large meals. Avoid Tobacco, alcohol, greasy, acidic, or spicy food, coffee, and carbonated beverages. Sip plain water between bites. Avoid eating within 2 hours before bedtime. Walk after the meal.
-          Compliance with medications has been stressed. Continue other medications. Side effects, risks, and complications were clearly explained and the patient verbalized understanding and was given the opportunity to ask questions. Relaxation techniques were discussed, stress avoidance was reviewed, medication and yoga were encouraged.
-
-          **Follow-up as scheduled**.
-
-          """
-        few_shot_assistant_2 = """
-          "**Compliance** with medications has been stressed.
-          Continue other medications.
-          Side effects, risks, and complications were clearly explained and the patient verbalized understanding and was given the opportunity to ask questions.
-          Relaxation techniques were discussed, stress avoidance was reviewed, and medication and yoga were encouraged."
-          **Follow-up as scheduled**.
-          """
-
+        Please match each medication with the most relevant disease or disorder it is associated with, mentioned in the\
+        provided text delimited by triple backticks, adhering to the provided rules.\
+        At the end check If the medications is not grouped, then add medication to the "Other Medications" section.
+         
+         '''{self.post_date}'''
+        
+        """
+        print(user_text)
         messages = [{'role': 'system', 'content': prompt},
-                    {'role': 'user', 'content': f"{self.delimiter}{few_shot_user_1}{self.delimiter}"},
-                    {'role': 'assistant', 'content': few_shot_assistant_1},
-                    {'role': 'user', 'content': f"{self.delimiter}{few_shot_user_2}{self.delimiter}"},
+                    {'role': 'user', 'content': f"{delimiter}{few_shot_user_2}{delimiter}"},
                     {'role': 'assistant', 'content': few_shot_assistant_2},
-                    {'role': 'user', 'content': f"{self.delimiter}{user_text}{self.delimiter}"}]
+                    {'role': 'user', 'content': f"{delimiter}{few_shot_user_3}{delimiter}"},
+                    {'role': 'assistant', 'content': few_shot_assistant_3},
+                    {'role': 'user', 'content': f"{delimiter}{few_shot_user_4}{delimiter}"},
+                    {'role': 'assistant', 'content': few_shot_assistant_4},
+                    {'role': 'user', 'content': f"{delimiter}{few_shot_user_5}{delimiter}"},
+                    {'role': 'assistant', 'content': few_shot_assistant_5},
+                    {'role': 'user', 'content': f"{delimiter}{few_shot_user_6}{delimiter}"},
+                    {'role': 'assistant', 'content': few_shot_assistant_6},
+                    {'role': 'user', 'content': f"{delimiter}{user_text}{delimiter}"}]
 
         response = get_completion(messages)
+        print(response)
 
-        return response
+        new_text = clear_lines_above_and_containing(response, "No medication mentioned for this condition")
+        print(new_text)
 
-    def template_2(self):
-        text_0 = get_lab_results()
-
-        text = f"""
-        The labs readings of patient is delimited by triple backticks.
-        ```{text_0}```
-        and the medications are mentioned in the text delimited by triple dashes.
-        ---{self.medications_text}---
+        prompt_5 = f"""
+        
+            Your task is help medical assistant to add a concise plan of care with 4 to 5 lines for disease or disorder \
+            that i will provide.
+            Utilize double asterisks for all headings.
+            Utilize double asterisks for all "medications" with their "SIG".
+            Don't suggest any disease, disorder or symptoms for any medication. 
+            If the prompt contain "Other medications". please write these medications at the end with the heading.
+            Don't add heading of "Plan of care:"
+            It is Mandatory to conclude the plan of care with this line "Follow-up as scheduled"
+            
     """
-        messages = [
-            {
-                "role": "system",
-                "content": f"""Your job is to write a plan of care based on the text that i will provide. Lets think step by step:
-                    Write the date on which the lab were conducted.
-                    First, It is mandatory to write the main headings under double asterisks if added.
-                    Than add the readings under the main heading.
-                    Don't write the patient details or additional data.
-                    Don't write the reference intervals in the output.
-                    Don't write the Indications.
-                    Don't suggest any potential issue based on findings.
-                    Make sure nothing is missed in the output.
-                    Also write one line of plan of care below abnormal values of each main heading. 
-                    Don't add the heading of "plan of care".
-                    Write the mentioned medications in the related test after the advice.
-                    Double asterisks the test names.
-                    It is Mandatory to conclude with this line "Follow-up as scheduled"
+        user_text = f"""
+        
+           Write a concise plan of care with 4 to 5 lines for disease or disorder if the medication that is the only\
+            mentioned in the text delimited by triple backticks is linked with it.
+           
+              '''{new_text}'''
+        
+        """
+
+        delimiter = "####"
+
+        few_shot_user_1 = """
+        **Asthma, Unspecified:
+        - Ventolin HFA 90 mcg/actuation aerosol inhaler. Sig: 2 puffs every 6 hours as needed.
+        - Breo Ellipta 100 mcg-25 mcg/dose powder for inhalation. Sig: 1 puff daily.**
+    
+        **Other Medications:
+        - Ascorbic Acid (Vitamin C) 500 mg Tablet\n, Sig: Take 1 tablet (500mg) by oral route once daily.**
+        """
+        few_shot_assistant_1 = """
+    **Asthma, Unspecified:
+    
+        - Ventolin HFA 90 mcg/actuation aerosol inhaler. Sig: 2 puffs every 6 hours as needed.
+        - Breo Ellipta 100 mcg-25 mcg/dose powder for inhalation. Sig: 1 puff daily.**
+        - Avoid triggers that may worsen cough variant asthma, such as cold air, smoke, and allergens.
+        - Use a peak flow meter to monitor lung function and adjust medication use as needed.
+        - Follow an asthma action plan provided by healthcare provider.
+        - If symptoms persist or worsen, consult with healthcare provider for further evaluation and potential adjustment \
+        of treatment plan.
+        
+    **Gastro-esophageal reflux disease without esophagitis:
+    
+        - Simethicone 80 mg chewable tablet, Sig: One Tablet Daily q6h.**
+        - Avoid trigger foods and beverages that can worsen symptoms, such as spicy foods, citrus fruits, and caffeine.
+        - Eat smaller, more frequent meals and avoid lying down immediately after eating.
+        - Elevate the head of the bed to reduce nighttime reflux.
+        - If symptoms persist or worsen, consult with your healthcare provider for further evaluation and potential \
+        alternative treatment options.
+        
+    **Other Medications:
+    
+        - Ascorbic Acid (Vitamin C) 500 mg Tablet\n, Sig: Take 1 tablet (500mg) by oral route once daily.**
+            
+    **Follow-up as scheduled**
                 """
-            },
-            {
-                "role": "user",
-                "content": "Your job is to write a plan of care based on the lab report.Don't add the results in the"
-                           "future outputs. Only remember the format."
-            },
-            {
-                "role": "assistant",
-                "content": f"""
-                **Labs done on:** 11/27/2023
-                **P14+eGFR:**
-                **Glucose** 112 (high). 
-                Continue to follow a low carbohydrate diet and monitor blood sugar levels regularly.
-                **Lipid Panel:**
-                **Triglycerides** 164 (high).
-                Maintain a low-fat diet and continue regular exercises.
-                **Hemoglobin A1c:**
-                **Hemoglobin A1c** 6.6 (high). 
-                Continue to monitor blood sugar levels and follows a diabetes management plan.
-                **CBC With Differential/Platelet:**
-                **MCH** 26.1 (low).
-                **MCHC** 31.4 (low).
-                **Eos (Absolute)** 0.6 (high).
-                Continue taking montelukast 10 mg tablet as prescribed.
-                **Vitamin D, 25-Hydroxy:**
-                **Vitamin D, 25-Hydroxy** 23.3 (low). 
-                Continue taking Vitamin D3 125 mcg (5,000 unit) tablet daily as prescribed.
-                **Follow-up as scheduled**
-    """
-            },
-            {
-                "role": "user",
-                "content": f"{self.delimiter}{text}{self.delimiter}"
-            }
-        ]
 
-        response = get_completion(messages)
+        messages = [{'role': 'system', 'content': prompt_5},
+                    {'role': 'user', 'content': f"{delimiter}{few_shot_user_1}{delimiter}"},
+                    {'role': 'assistant', 'content': few_shot_assistant_1},
+                    {'role': 'user', 'content': f"{delimiter}{user_text}{delimiter}"}]
 
-        return response
+        response_5 = get_completion(messages)
+
+        return response_5
 
     def final(self):
-        if "Type of visit: Lab/Radiology Review" in self.post_data:
-            response = self.template_2()
-        else:
-            response = self.template_4()
-
+        response = self.template_1()
         return response
 
 
@@ -547,6 +547,3 @@ class physical_exam:
         else:
             "Physical exam for this is not developed"
         return response_1
-
-
-
