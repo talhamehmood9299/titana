@@ -4,7 +4,7 @@ from labs_radiology import get_lab_results
 
 def task(task_string, post_date):
     if "Task 1:" == task_string:
-        instance = histroy_of_illness(post_date)
+        instance = history_of_illness(post_date)
         response = instance.result
     elif "Task 2:" == task_string:
         instance = plan_of_care(post_date)
@@ -73,7 +73,7 @@ class cpt_code:
 
         return result
 
-class histroy_of_illness:
+class history_of_illness:
     def __init__(self, post_date, delimiter="####"):
         self.post_data = post_date
         self.delimiter = delimiter
@@ -166,6 +166,14 @@ class histroy_of_illness:
         ]
         response = get_completion(messages_1)
         print(response)
+
+        # Split the text into lines
+        lines = response.split('\n')
+
+        # Extract the last line
+        history = lines[-1].strip()
+
+        return history
 
     def final(self):
         basic_data = self.get_basic_information()
