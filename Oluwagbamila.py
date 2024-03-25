@@ -7,13 +7,34 @@ def task(task_string, post_date):
     if "Task 1:" == task_string:
         instance = histroy_of_illness(post_date)
         response = instance.result
-    elif "Task 2:" in post_date:
+    elif "Task 2:" == task_string:
         instance = plan_of_care(post_date)
+        response = instance.result
+    elif "Task 3:" == task_string:
+        instance = cpt_code(post_date)
+        response = instance.result
+    elif "Task 4:" == task_string:
+        instance = physical_exam(post_date)
+        response = instance.result
+    elif "Task 5:" == task_string:
+        instance = review_of_system(post_date)
         response = instance.result
     else:
         response = "Task is not justified"
     return response
-    
+
+
+class cpt_code:
+    def __init__(self, post_date, delimiter="####"):
+        self.post_date = post_date
+        self.delimiter = delimiter
+        result = self.final()  # Call the final() method and store the result
+        self.result = result  # Store the result as an attribute
+
+    def final(self):
+        result = get_cpt_code(self.post_date)
+        return result
+
 class histroy_of_illness:
     def __init__(self, post_date, delimiter="####"):
         self.post_date = post_date
@@ -211,107 +232,6 @@ class histroy_of_illness:
         template = get_templates(basic_data)
 
         print(template)
-        
-class plan_of_care:
-    def __init__(self, post_date, delimiter="####"):
-        self.post_data = post_date
-        self.delimiter = delimiter
-        medication_start = post_date.find("cutformhere:") + len("cutformhere:")
-        medication_end = post_date.find("Doctor dictation")
-        self.medications_text = post_date[medication_start:medication_end].strip()
-        dictation_start = post_date.find("Doctor dictation:") + len("Doctor dictation:")
-        doctor_semi = post_date[dictation_start:].strip()
-        self.diagnosis = extract_text(doctor_semi)
-        self.dictation_final = get_dictation(doctor_semi)
-        result = self.final()
-        self.result = result
 
-    def template_4(self):
-        prompt = """
-           you are a medical assistant. Your job is to write a plan of care by following the mentioned rules. let's think step by step.
-               1) First extract the only one associate disease or disorder for each medication if mentioned in the provided text.
-               2) And then write all the medications in the first line separated with comma and write associated disease and disorder with lines plan of care and medication mentioned in the provided text.
-               3) Again If any medications are given in the provided text with disease or disorder then write the names of these medications in the first line.
-               4) Do not write the name of medications in the Plan of Care paragraphs of disease or disorders.
-               5) Write the one name of the disease or disorder as the heading and then write some lines of Plan of Care in the form of paragraph.
-               6) Write the short form of disease or disorders
-               7) Include only medication names. Don't add dosage, and SIG (instructions for use).
-               8) Don't add ICD-10 codes.
-               9) Don't add Start Date, Prescribe Date, End Date and Qty of the medication.
-               10) If the disease and disorder is not related with the medication, than don't add the disease or disorder in the \
-               output.
-               11) If medication is not given in the provided text with disease or disorder then it is also necessary to include a concise general plan of care for this disease or disorder by yourself comprising 4 to 5 lines.
-               12) Utilize double asterisks for all headings.
-               13) Utilize double asterisks for all "medications".
-               14) Don't suggest any disease, disorder or symptoms for any medication. 
-               15) Don't add heading of "Plan of care, Disease or disorder and "Medication".
-               16) Don't add the disease or disorder in the output if no medication is mentioned in the provided text.
-               17) It is Mandatory to add these below lines in the end of plan of care in every response:
-               "**Compliance** with medications has been stressed.
-               Continue other medications.
-               Side effects, risks, and complications were clearly explained and the patient verbalized understanding and was given the opportunity to ask questions.
-               Relaxation techniques were discussed, stress avoidance was reviewed, and medication and yoga were encouraged."
-               18) It is Mandatory to conclude the plan of care with this line "F/u appointment given."
-               
-               Very Important Note:
-               1) If any medications are given in the provided text with disease or disorder then write these medications in the first line, Do not include these medications in the Plan of care paragraphs.
-               1) If medication is not given in the provided text with disease or disorder then it is also necessary to include a concise general plan of care for this disease or disorder by yourself comprising 4 to 5 lines.
-               2) If any medications are given in the provided text then add it in the first line without any heading otherwise do not add it.
-               3) Do not write any medications in the Plan of Care paragraphs of disease or disorders.
-               3) Lets think step by step.
-           """
-
-        user_text = f"""
-              Write a concise plan of care with 4 to 5 lines for each disease or disorder if the related medication and the doctor dictation is linked with it.
-              It is mandatory to write only one heading of disease or disorder for one mentioned medication.
-              Don't add the disease or disorder in the output if no medication is mentioned in the provided text.
-              The disease or disorders are delimited by triple backticks.
-              '''{self.diagnosis}'''
-
-              The medications are delimited by triple dashes.
-              ---{self.medications_text}---
-
-              The doctor dictation is delimited by triple hashtags.
-              ###{self.dictation_final}###
-               """
-        few_shot_user_1 = """
-           Write a plan of care. Don't add the output in the future responses. 
-           write only one heading of disease or disorder for one mentioned medication.
-           """
-        few_shot_user_2 = """
-           Write a plan of care. Don't add the output in the future responses.
-           Write only one heading of disease or disorder for one mentioned medication.
-           """
-        few_shot_assistant_1 = """
-           Continue with metformin and levothyroxine.
-           **Hyperlipidemia**: Dietary instruction about hyperlipidemia given to the patient. Eat a diet low in saturated and trans fats. Include lots of fruits, vegetables, beans, nuts, whole grains, and fish regularly into your diet. Stop eating red meat and processed meats like bacon, sausage, and cold cuts. Drink skim or low-fat milk.
-           **GERD**: Recommended to eat slowly, chew well every bite for at least 20-25 times before swallowing. Do not talk, read or watch TV while eating. Eat small portions, frequently, at least every 3-h. No large meals. Avoid Tobacco, alcohol, greasy, acidic, or spicy food, coffee, and carbonated beverages. Sip plain water between bites. Avoid eating within 2 hours before bedtime. Walk after the meal.
-           Compliance with medications has been stressed. Continue other medications. Side effects, risks, and complications were clearly explained and the patient verbalized understanding and was given the opportunity to ask questions. Relaxation techniques were discussed, stress avoidance was reviewed, medication and yoga were encouraged.
-
-           **F/u appointment given.**.
-
-           """
-        few_shot_assistant_2 = """
-           **Compliance** with medications has been stressed.
-           Continue other medications.
-           Side effects, risks, and complications were clearly explained and the patient verbalized understanding and was given the opportunity to ask questions.
-           Relaxation techniques were discussed, stress avoidance was reviewed, and medication and yoga were encouraged."
-           **F/u appointment given.**.
-           """
-
-        messages = [{'role': 'system', 'content': prompt},
-                    {'role': 'user', 'content': f"{self.delimiter}{few_shot_user_1}{self.delimiter}"},
-                    {'role': 'assistant', 'content': few_shot_assistant_1},
-                    {'role': 'user', 'content': f"{self.delimiter}{few_shot_user_2}{self.delimiter}"},
-                    {'role': 'assistant', 'content': few_shot_assistant_2},
-                    {'role': 'user', 'content': f"{self.delimiter}{user_text}{self.delimiter}"}]
-
-        response = get_completion(messages)
-
-        return response
-
-    def final(self):
-        response = self.template_4()
-        return response
         general = self.combine_the_text(basic_data, history, template)
         return general
