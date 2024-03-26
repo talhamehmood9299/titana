@@ -13,7 +13,7 @@ OPENAI_API_KEY = os.environ.get('OPENAI_API_KEY')
 
 def get_templates(post_data):
     # loader = TextLoader('./hpi.txt')
-    loader = TextLoader("Template.txt")
+    loader = TextLoader("/code/Template_utf8.txt")
 
     documents = loader.load()
 
