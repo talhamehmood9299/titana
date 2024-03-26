@@ -1,10 +1,23 @@
 import openai
 from extra_functions import extract_text, get_completion, get_dictation
 from labs_radiology import get_lab_results
+from Template import get_templates
 
 def task(task_string, post_date):
     if "Task 1:" == task_string:
         instance = histroy_of_illness(post_date)
+        response = instance.result
+    elif "Task 2:" == task_string:
+        instance = plan_of_care(post_date)
+        response = instance.result
+    elif "Task 3:" == task_string:
+        instance = cpt_code(post_date)
+        response = instance.result
+    elif "Task 4:" == task_string:
+        instance = physical_exam(post_date)
+        response = instance.result
+    elif "Task 5:" == task_string:
+        instance = review_of_system(post_date)
         response = instance.result
     else:
         response = "Task is not justified"
@@ -65,5 +78,62 @@ class histroy_of_illness:
         response = get_completion(messages_2)
         return response
 
+class plan_of_care:
+    def __init__(self, post_date, delimiter="####"):
+        self.post_data = post_date
+        self.delimiter = delimiter
+        medication_start = post_date.find("cutformhere:") + len("cutformhere:")
+        medication_end = post_date.find("Doctor dictation")
+        self.medications_text = post_date[medication_start:medication_end].strip()
+        dictation_start = post_date.find("Doctor dictation:") + len("Doctor dictation:")
+        doctor_semi = post_date[dictation_start:].strip()
+        self.diagnosis = extract_text(doctor_semi)
+        self.dictation_final = get_dictation(doctor_semi)
+        result = self.final()
+        self.result = result
 
+    def final(self):
+        template = get_templates(self.post_data)
+        system = f""" you are a medical assistant your job is to write the Plan of Care based on the provided text. lets think step by step.\
+        1) First write the name of the disease or disorder mentioned in the text as a heading.
+        2) In the next line write the related medication if mentioned in the provided text. Don't add the heading of medication.
+        3) Then write the other mentioned text in the form of bullets.
+        4) Do not write any extra text.
+        5) Use double asteriks for the headings.
+        6) It is mandatory to conclude with "Follow-up as scheduled". """
+        prompt = f"""
+        You are a medical assistant your job is to write the plan of care based on this text.
+        {template}
+        {self.post_data}
+       """
+
+        delimiter = "###"
+        few_shot_user_1 = """
+            has c/op lbp since fall,hasnt start pt yet, hand hrts,hstry of strpoke ,askng in pt rehab, contacted she has to saty in hsptl 3 nui8s then 
+            will take her, enc to out pt ,trmdl refill,will strt from mon pot. htn-comp wd meds,flwng low salt cardia. cp wd recent fall n lbp leg pain-left pt,
+            cnt trmdl. hld-on statin. hm. labs rev 03/01. f/u 4 weeks
+           """
+        few_shot_assistant_1 = """
+           HTN:
+            lisinopril 15mg 1 tablet by mouth once daily.
+            She is following a low-salt and cardiac diet
+           Chronic pain with a recent fall, left leg pain, and back pain:
+            Tramadol 50mg tablet is refilled
+            It is advised to exercise to Loosen Muscles and get Better Sleep.
+            She will start physical therapy sessions on Monday next week
+           HLD:
+            She is taking Lipitor 40mg medicine regularly
+            It is advised to eat a diet low in saturated and trans fats. Regularly include fruits, vegetables, beans, nuts, whole grains, and fish.
+           **Follow-up as scheduled**.
+
+           """
+
+        messages = [{'role': 'system', 'content': system},
+                    {'role': 'user', 'content': f"{delimiter}{few_shot_user_1}{delimiter}"},
+                    {'role': 'assistant', 'content': few_shot_assistant_1},
+                    {'role': 'user', 'content': f"{delimiter}{prompt}{delimiter}"}]
+
+        response = get_completion(messages)
+
+        return response
 
