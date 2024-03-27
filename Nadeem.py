@@ -79,6 +79,7 @@ class histroy_of_illness:
         return response
 
 class plan_of_care:
+    
     def __init__(self, post_date, delimiter="####"):
         self.post_data = post_date
         self.delimiter = delimiter
@@ -98,6 +99,7 @@ class plan_of_care:
         1) First write the name of the disease or disorder mentioned in the text as a heading.
         2) In the next line write the related medication if mentioned in the provided text. Don't add the heading of medication.
         3) Then write the other mentioned text in the form of bullets.
+        4)Write the labs and radiology text under the 'Health Maintenance' heading if available.
         4) Do not write any extra text.
         5) Use double asteriks for the headings.
         6) It is mandatory to conclude with "Follow-up as scheduled". """
@@ -106,7 +108,7 @@ class plan_of_care:
         {template}
         {self.post_data}
        """
-
+    
         delimiter = "###"
         few_shot_user_1 = """
             has c/op lbp since fall,hasnt start pt yet, hand hrts,hstry of strpoke ,askng in pt rehab, contacted she has to saty in hsptl 3 nui8s then 
@@ -125,15 +127,42 @@ class plan_of_care:
             She is taking Lipitor 40mg medicine regularly
             It is advised to eat a diet low in saturated and trans fats. Regularly include fruits, vegetables, beans, nuts, whole grains, and fish.
            **Follow-up as scheduled**.
-
+    
            """
-
+        few_shot_user_2 = """
+            valsartan,metformin, clopidogrel, sal, glimepiride,aspirin, metoprolol. insulin inactive. bw cont A1c. 
+            Crustina office. mylanta 2 times a day. f/u friday on call. 
+            meal in rest 2 days ago, dvlp nausea diarhea abdmnl dscmfrt,losing apoetite, no fever. p/e mild tndrness epigastrc area.
+           """
+        few_shot_assistant_2 = """
+           HTN:
+            Metoprolol 50mg tablet is refilled
+            Valsartan 160mg tablet is refilled
+            It is advised to eat a Healthy Low-salt Diet.
+           DM:
+            Glimepiride 4mg tablet is refilled
+            Metformin 1000mg tablet is refilled
+            Steglatro 15mg tablet is refilled
+            Following a consistent low-calorie, low-cholesterol diet, and avoiding concentrated sweets is advised.
+           Heart Disease:
+            Clopidogrel 75mg tablet is refilled
+            Aspirin 81mg tablet is refilled
+            It is advised to follow a cardiac diet
+           Health Maintenance:
+            A blood work script is sent to LabCorp
+            A follow up appointment is scheduled
+           **Follow-up as scheduled**.
+    
+           """
+    
         messages = [{'role': 'system', 'content': system},
                     {'role': 'user', 'content': f"{delimiter}{few_shot_user_1}{delimiter}"},
                     {'role': 'assistant', 'content': few_shot_assistant_1},
+                    {'role': 'user', 'content': f"{delimiter}{few_shot_user_2}{delimiter}"},
+                    {'role': 'assistant', 'content': few_shot_assistant_2},
                     {'role': 'user', 'content': f"{delimiter}{prompt}{delimiter}"}]
-
+    
         response = get_completion(messages)
-
+    
         return response
 
