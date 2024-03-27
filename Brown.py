@@ -27,8 +27,7 @@ def task(task_string, post_date):
 
 
 class cpt_code:
-    def __init__(self, key, post_date, delimiter="####"):
-        self.key = key
+    def __init__(self, post_date, delimiter="####"):
         self.post_data = post_date
         self.delimiter = delimiter
         result = self.final()  # Call the final() method and store the result
@@ -78,8 +77,7 @@ class cpt_code:
 
 
 class histroy_of_illness:
-    def __init__(self, key, post_date, delimiter="####"):
-        self.key = key
+    def __init__(self, post_date, delimiter="####"):
         self.post_data = post_date
         self.delimiter = delimiter
         result = self.final()  # Call the final() method and store the result
