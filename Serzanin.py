@@ -4,21 +4,21 @@ from labs_radiology import get_lab_results
 from extra_functions import extract_text, get_completion,get_dictation
 from hpi import get_templates
 
-def task(post_data):
-    if "Task 1:" in post_data:
-        instance = histroy_of_illness(openai.api_key, post_data)
+def task(task_string, post_date):
+    if "Task 1:" == task_string:
+        instance = histroy_of_illness(post_date)
         response = instance.result
-    elif "Task 2:" in post_data:
-        instance = plan_of_care(post_data)
+    elif "Task 2:" == task_string:
+        instance = plan_of_care(post_date)
         response = instance.result
-    elif "Task 3:" in post_data:
-        instance = cpt_code(openai.api_key, post_data)
+    elif "Task 3:" == task_string:
+        instance = cpt_code(post_date)
         response = instance.result
-    elif "Task 4:" in post_data:
-        instance = physical_exam(post_data)
+    elif "Task 4:" == task_string:
+        instance = physical_exam(post_date)
         response = instance.result
-    elif "Task 5:" in post_data:
-        instance = review_of_system(post_data)
+    elif "Task 5:" == task_string:
+        instance = review_of_system(post_date)
         response = instance.result
     else:
         response = "Task is not justified"
