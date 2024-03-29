@@ -1,16 +1,30 @@
 import openai
 from extra_functions import extract_text, get_completion, get_dictation
 from labs_radiology import get_lab_results
-from extra_functions import extract_text, get_completion, get_dictation, clear_lines_above_and_containing
+from extra_functions import extract_text, get_completion, get_dictation, clear_lines_above_and_containing, get_cpt_code
 from hpi import get_templates
 
 def task(task_string, post_date):
     if "Task 1:" == task_string:
         instance = histroy_of_illness(post_date)
         response = instance.result
+    elif "Task 3:" == task_string:
+        instance = cpt_code(post_date)
+        response = instance.result
     else:
         response = "Task is not justified"
     return response
+
+class cpt_code:
+    def __init__(self, post_date, delimiter="####"):
+        self.post_date = post_date
+        self.delimiter = delimiter
+        result = self.final()  # Call the final() method and store the result
+        self.result = result  # Store the result as an attribute
+
+    def final(self):
+        result = get_cpt_code(self.post_date)
+        return result
 
 class histroy_of_illness:
     def __init__(self, post_date, delimiter="####"):
