@@ -24,14 +24,14 @@ def get_templates(post_data):
 
     retriever = vectorstore.as_retriever()
 
-    template = """You are a Medical assistant. Your job is to return the disease or disorder from the context along with their bullets that
-    are related to provided text.
-    Return "nothing" if no disease or disorder mentioned in the provided text is related to context.
-    Use the following pieces of retrieved context to answer the question.
-    Question: {question}
-    Context: {context}
-    Answer:
-    """
+    template = """You are a Medical assistant. Your job is to return the diseases or disorders from the context along with their bullets that
+        are related to provided text.
+        Return "nothing" if no disease or disorder mentioned in the provided text is related to context.
+        Use the following pieces of retrieved context to answer the question.
+        Question: {question}
+        Context: {context}
+        Answer:
+        """
     prompt = ChatPromptTemplate.from_template(template)
 
     llm = ChatOpenAI(model_name="gpt-4", temperature=0)
