@@ -22,55 +22,15 @@ def task(task_string, post_date):
         response = "Task is not justified"
     return response
 
-
 class cpt_code:
-    def __init__(self, key, post_date, delimiter="####"):
-        self.key = key
-        self.post_data = post_date
+    def __init__(self, post_date, delimiter="####"):
+        self.post_date = post_date
         self.delimiter = delimiter
         result = self.final()  # Call the final() method and store the result
         self.result = result  # Store the result as an attribute
 
     def final(self):
-        prompt = """You are a medical assistant. Your job is to make the python dictionary based on the text that I will provide.
-         The sequence of the keys are if available:
-         "Systolic:"
-         "Diastolic:"
-         "BMI:"
-         If the mentioned keys are not available than return the key "nothing" with the value "nothing". 
-        """
-        user_1 = """You are a medical assistant. Your job is to make the python dictionary based on the text that I will provide.
-         The sequence of the keys are if available:
-         "Systolic:"
-         "Diastolic:"
-         "BMI:"
-         If the mentioned keys are not available than return the key "nothing" with the value "nothing". 
-         """
-        result_1 = """
-        {'Systolic':'120', 'Diastolic':'80', 'BMI':'36.5'}
-        """
-        result_2 = """
-        {'nothing':'nothing'}
-        """
-        user_text = f"""
-        You are a medical assistant. Your job is to make the python dictionary based on the text delimited by triple backticks.
-             '''{self.post_data}'''
-         The sequence of the keys are if available:
-         "Systolic:"
-         "Diastolic:"
-         "BMI:"
-         If the mentioned keys are not available than return the key "nothing" with the value "nothing". 
-        """
-        messages = [
-            {'role': 'system', 'content': prompt},
-            {'role': 'user', 'content': f"{self.delimiter}{user_1}{self.delimiter}"},
-            {'role': 'assistant', 'content': f"{result_1}"},
-            {'role': 'user', 'content': f"{self.delimiter}{user_1}{self.delimiter}"},
-            {'role': 'assistant', 'content': f"{result_2}"},
-            {'role': 'user', 'content': f"{self.delimiter}{user_text}"}
-        ]
-        result = get_completion(messages)
-
+        result = get_cpt_code(self.post_date)
         return result
 
 class history_of_illness:
