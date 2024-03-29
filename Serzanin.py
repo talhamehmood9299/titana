@@ -127,9 +127,9 @@ class histroy_of_illness:
             {'role': 'user', 'content': f"{self.delimiter}{prompt_1}"}
         ]
         response = get_completion(messages_1)
-        print(response)
-
-        response = response.content
+        # print(response)
+        # uncomment below line only for local testing
+        # response = response.content
         # Split the text into lines
         lines = response.split('\n')
 
@@ -245,10 +245,10 @@ class histroy_of_illness:
 
         history = self.get_history()
 
-        template = get_templates(str(basic_data))
+        template = get_templates(basic_data)
 
         general = self.combine_the_text(basic_data, history, template)
-        return general.content
+        return general
 
 
 class plan_of_care:
