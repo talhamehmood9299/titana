@@ -1,7 +1,8 @@
 import openai
-from extra_functions import extract_text, get_completion, get_dictation
+from extra_functions import extract_text, get_completion, get_dictation, get_cpt_code
 from labs_radiology import get_lab_results
 from Template import get_templates
+
 
 def task(task_string, post_date):
     if "Task 1:" == task_string:
@@ -13,16 +14,21 @@ def task(task_string, post_date):
     elif "Task 3:" == task_string:
         instance = cpt_code(post_date)
         response = instance.result
-    elif "Task 4:" == task_string:
-        instance = physical_exam(post_date)
-        response = instance.result
-    elif "Task 5:" == task_string:
-        instance = review_of_system(post_date)
-        response = instance.result
     else:
         response = "Task is not justified"
     return response
 
+
+class cpt_code:
+    def __init__(self, post_date, delimiter="####"):
+        self.post_date = post_date
+        self.delimiter = delimiter
+        result = self.final()  # Call the final() method and store the result
+        self.result = result  # Store the result as an attribute
+
+    def final(self):
+        result = get_cpt_code(self.post_date)
+        return result
 class histroy_of_illness:
     def __init__(self, post_date, delimiter="####"):
         self.post_data = post_date
@@ -78,8 +84,9 @@ class histroy_of_illness:
         response = get_completion(messages_2)
         return response
 
+
 class plan_of_care:
-    
+
     def __init__(self, post_date, delimiter="####"):
         self.post_data = post_date
         self.delimiter = delimiter
@@ -97,18 +104,24 @@ class plan_of_care:
         template = get_templates(self.post_data)
         system = f""" you are a medical assistant your job is to write the Plan of Care based on the provided text. lets think step by step.\
         1) First write the name of the disease or disorder mentioned in the text as a heading.
-        2) In the next line write the related medication if mentioned in the provided text. Don't add the heading of medication.
-        3) Then write the other mentioned text in the form of bullets.
-        4)Write the labs and radiology text under the 'Health Maintenance' heading if available.
-        4) Do not write any extra text.
-        5) Use double asteriks for the headings.
-        6) It is mandatory to conclude with "Follow-up as scheduled". """
+        2) Under the heading in second line write the related medication of disease and disorder if mentioned in the provided text. Don't write the start date, \
+         prescribed date and end date of the medication.
+        3) Do not write any heading of medication.
+        4) Then write the other mentioned text in the form of bullets.
+        5) Write the labs and radiology text under the 'Health Maintenance' heading if available.
+        6) Do not write any extra text and headings.
+        7) Ignore the pharmacy related text.
+        8) Do not repeat the text.
+        9) Use double asteriks for all the headings.
+        10) It is mandatory to conclude with "Follow-up as scheduled".
+        11) At the end, check if there is a heading of medication in the final response then remove this heading and add the medication in the second line.
+         """
         prompt = f"""
         You are a medical assistant your job is to write the plan of care based on this text.
         {template}
         {self.post_data}
        """
-    
+
         delimiter = "###"
         few_shot_user_1 = """
             has c/op lbp since fall,hasnt start pt yet, hand hrts,hstry of strpoke ,askng in pt rehab, contacted she has to saty in hsptl 3 nui8s then 
@@ -116,53 +129,55 @@ class plan_of_care:
             cnt trmdl. hld-on statin. hm. labs rev 03/01. f/u 4 weeks
            """
         few_shot_assistant_1 = """
-           HTN:
-            lisinopril 15mg 1 tablet by mouth once daily.
-            She is following a low-salt and cardiac diet
-           Chronic pain with a recent fall, left leg pain, and back pain:
-            Tramadol 50mg tablet is refilled
-            It is advised to exercise to Loosen Muscles and get Better Sleep.
-            She will start physical therapy sessions on Monday next week
-           HLD:
-            She is taking Lipitor 40mg medicine regularly
-            It is advised to eat a diet low in saturated and trans fats. Regularly include fruits, vegetables, beans, nuts, whole grains, and fish.
+           **HTN:**
+            - lisinopril 15mg 1 tablet by mouth once daily.
+            - She is following a low-salt and cardiac diet
+           **Chronic pain:**
+            - Tramadol 50mg tablet is refilled
+            - It is advised to exercise to Loosen Muscles and get Better Sleep.
+            - She will start physical therapy sessions on Monday next week
+           **HLD:**
+            - She is taking Lipitor 40mg medicine regularly
+            - It is advised to eat a diet low in saturated and trans fats. Regularly include fruits, vegetables, beans, nuts, whole grains, and fish.
+
            **Follow-up as scheduled**.
-    
+
            """
         few_shot_user_2 = """
             valsartan,metformin, clopidogrel, sal, glimepiride,aspirin, metoprolol. insulin inactive. bw cont A1c. 
             Crustina office. mylanta 2 times a day. f/u friday on call. 
-            meal in rest 2 days ago, dvlp nausea diarhea abdmnl dscmfrt,losing apoetite, no fever. p/e mild tndrness epigastrc area.
+            meal in rest 2 days ago, dvlp nausea diarhea abdmnl dscmfrt,losing apoetite, no fever. p/e mild tndrness epigastrc area. Labs ordrd.
            """
         few_shot_assistant_2 = """
-           HTN:
-            Metoprolol 50mg tablet is refilled
-            Valsartan 160mg tablet is refilled
-            It is advised to eat a Healthy Low-salt Diet.
-           DM:
-            Glimepiride 4mg tablet is refilled
-            Metformin 1000mg tablet is refilled
-            Steglatro 15mg tablet is refilled
-            Following a consistent low-calorie, low-cholesterol diet, and avoiding concentrated sweets is advised.
-           Heart Disease:
-            Clopidogrel 75mg tablet is refilled
-            Aspirin 81mg tablet is refilled
-            It is advised to follow a cardiac diet
-           Health Maintenance:
-            A blood work script is sent to LabCorp
-            A follow up appointment is scheduled
-           **Follow-up as scheduled**.
-    
-           """
-    
-        messages = [{'role': 'system', 'content': system},
-                    {'role': 'user', 'content': f"{delimiter}{few_shot_user_1}{delimiter}"},
-                    {'role': 'assistant', 'content': few_shot_assistant_1},
-                    {'role': 'user', 'content': f"{delimiter}{few_shot_user_2}{delimiter}"},
-                    {'role': 'assistant', 'content': few_shot_assistant_2},
-                    {'role': 'user', 'content': f"{delimiter}{prompt}{delimiter}"}]
-    
-        response = get_completion(messages)
-    
-        return response
+           **HTN:**
+            - Metoprolol 50mg tablet is refilled.
+            - Valsartan 160mg tablet is refilled.
+            - It is advised to eat a Healthy Low-salt Diet.
+           **DM:**
+            - Glimepiride 4mg tablet is refilled.
+            - Metformin 1000mg tablet is refilled.
+            - Steglatro 15mg tablet is refilled.
+            - Following a consistent low-calorie, low-cholesterol diet, and avoiding concentrated sweets is advised.
+           **Heart Disease:**
+            - Clopidogrel 75mg tablet is refilled.
+            - Aspirin 81mg tablet is refilled.
+            - It is advised to follow a cardiac diet.
+           Health Maintenance:**
+            - A blood work script is sent to LabCorp.
+            - Labs ordered.
+            - A follow up appointment is scheduled.
 
+           **Follow-up as scheduled**.
+
+           """
+
+        messages = [{'role': 'system', 'content': system},
+                    {'role': 'user', 'content': f"{self.delimiter}{few_shot_user_1}{self.delimiter}"},
+                    {'role': 'assistant', 'content': few_shot_assistant_1},
+                    {'role': 'user', 'content': f"{self.delimiter}{few_shot_user_2}{self.delimiter}"},
+                    {'role': 'assistant', 'content': few_shot_assistant_2},
+                    {'role': 'user', 'content': f"{self.delimiter}{prompt}{self.delimiter}"}]
+
+        response = get_completion(messages)
+
+        return response
