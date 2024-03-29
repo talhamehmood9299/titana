@@ -1,6 +1,6 @@
 import openai
 from labs_radiology import get_lab_results
-from extra_functions import extract_text, get_completion, get_dictation, clear_lines_above_and_containing
+from extra_functions import extract_text, get_completion, get_dictation, clear_lines_above_and_containing, get_cpt_code
 
 def task(task_string, post_date):
     if "Task 1:" == task_string:
