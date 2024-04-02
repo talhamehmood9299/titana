@@ -2,6 +2,7 @@ import openai
 from labs_radiology import get_lab_results
 from extra_functions import extract_text, get_completion, get_dictation, clear_lines_above_and_containing, get_cpt_code
 
+
 def task(task_string, post_date):
     if "Task 1:" == task_string:
         instance = history_of_illness(post_date)
@@ -33,6 +34,7 @@ class cpt_code:
     def final(self):
         result = get_cpt_code(self.post_date)
         return result
+
 
 class history_of_illness:
     def __init__(self, post_date, delimiter="####"):
@@ -188,7 +190,7 @@ class plan_of_care:
         prompt = f"""
         You job is to organize the medications with the diseases and disorders mentioned in the text by following the \
         rules listed below. The medications and disease or disorder will be provided. Let’s think step by step.
-        
+
         Rules for this task:
         1) Utilize double asterisks for all headings.
         2) First find the most relatable disease or disorder for the medication if mentioned in the provided text, and \
@@ -202,7 +204,13 @@ class plan_of_care:
         condition" under the disease or disorder.
         8) At the end check If the medication is not grouped with the disease or disorder, then add it to \
         the "Other Medications" section.
-        
+        9) It is Mandatory to add these below lines in the end of plan of care in every response:
+        "**Compliance** with medications has been stressed.
+        Continue other medications.
+        Side effects, risks, and complications were clearly explained and the patient verbalized understanding and was given the opportunity to ask questions.
+        Relaxation techniques were discussed, stress avoidance was reviewed, and medication and yoga were encouraged."            
+        10) It is Mandatory to conclude the plan of care with this line "Follow-up appointment as scheduled."
+
         """
 
         few_shot_user_2 = "Organize the medication with the associated disease and disorder mentioned in the provided text."
@@ -241,9 +249,9 @@ class plan_of_care:
         Please match each medication with the most relevant disease or disorder it is associated with, mentioned in the\
         provided text delimited by triple backticks, adhering to the provided rules.\
         At the end check If the medications is not grouped, then add medication to the "Other Medications" section.
-         
+
          '''{self.post_date}'''
-        
+
         """
         print(user_text)
         messages = [{'role': 'system', 'content': prompt},
@@ -266,7 +274,7 @@ class plan_of_care:
         print(new_text)
 
         prompt_5 = f"""
-        
+
             Your task is help medical assistant to add a concise plan of care with 4 to 5 lines for disease or disorder \
             that i will provide.
             Utilize double asterisks for all headings.
@@ -275,15 +283,15 @@ class plan_of_care:
             If the prompt contain "Other medications". please write these medications at the end with the heading.
             Don't add heading of "Plan of care:"
             It is Mandatory to conclude the plan of care with this line "Follow-up as scheduled"
-            
+
     """
         user_text = f"""
-        
+
            Write a concise plan of care with 4 to 5 lines for disease or disorder if the medication that is the only\
             mentioned in the text delimited by triple backticks is linked with it.
-           
+
               '''{new_text}'''
-        
+
         """
 
         delimiter = "####"
@@ -292,13 +300,13 @@ class plan_of_care:
         **Asthma, Unspecified:
         - Ventolin HFA 90 mcg/actuation aerosol inhaler. Sig: 2 puffs every 6 hours as needed.
         - Breo Ellipta 100 mcg-25 mcg/dose powder for inhalation. Sig: 1 puff daily.**
-    
+
         **Other Medications:
         - Ascorbic Acid (Vitamin C) 500 mg Tablet\n, Sig: Take 1 tablet (500mg) by oral route once daily.**
         """
         few_shot_assistant_1 = """
     **Asthma, Unspecified:
-    
+
         - Ventolin HFA 90 mcg/actuation aerosol inhaler. Sig: 2 puffs every 6 hours as needed.
         - Breo Ellipta 100 mcg-25 mcg/dose powder for inhalation. Sig: 1 puff daily.**
         - Avoid triggers that may worsen cough variant asthma, such as cold air, smoke, and allergens.
@@ -306,20 +314,20 @@ class plan_of_care:
         - Follow an asthma action plan provided by healthcare provider.
         - If symptoms persist or worsen, consult with healthcare provider for further evaluation and potential adjustment \
         of treatment plan.
-        
+
     **Gastro-esophageal reflux disease without esophagitis:
-    
+
         - Simethicone 80 mg chewable tablet, Sig: One Tablet Daily q6h.**
         - Avoid trigger foods and beverages that can worsen symptoms, such as spicy foods, citrus fruits, and caffeine.
         - Eat smaller, more frequent meals and avoid lying down immediately after eating.
         - Elevate the head of the bed to reduce nighttime reflux.
         - If symptoms persist or worsen, consult with your healthcare provider for further evaluation and potential \
         alternative treatment options.
-        
+
     **Other Medications:
-    
+
         - Ascorbic Acid (Vitamin C) 500 mg Tablet\n, Sig: Take 1 tablet (500mg) by oral route once daily.**
-            
+
     **Follow-up as scheduled**
                 """
 
@@ -335,6 +343,7 @@ class plan_of_care:
     def final(self):
         response = self.template_1()
         return response
+
 
 class review_of_system:
     def __init__(self, post_date, delimiter="####"):
