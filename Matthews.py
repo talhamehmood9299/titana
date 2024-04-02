@@ -34,7 +34,7 @@ class cpt_code:
         result = get_cpt_code(self.post_date)
         return result
 
-class histroy_of_illness:
+class history_of_illness:
     def __init__(self, post_date, delimiter="####"):
         self.post_data = post_date
         self.delimiter = delimiter
