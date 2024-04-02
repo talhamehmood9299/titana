@@ -247,7 +247,6 @@ class plan_of_care:
 
         return response
 
-
 class review_of_system:
     def __init__(self, post_date, delimiter="####"):
         self.post_data = post_date
