@@ -510,7 +510,7 @@ class review_of_system:
             **Eyes:** Patient denies, Blurred or vision loss, Discharge itching or eye pain.
             **Heme/lymphatic:** Patient denies, Abnormal bruising, Bleeding, Lymphadenopathy.
             **Endocrine:** Patient denies, Excessive thirst or hunger, Heat or cold intolerance, Skin or hair changes, Weight gain or loss.
-            **Dentistry:** Patient denies, Toothache. 
+            **Dentistry:** Patient denies, Toothache.
         """
         few_shot_user_2 = """
         You are a medical assistant. Your job is to upgrade the template lines based on the symptoms lines based on the symptoms
@@ -531,7 +531,7 @@ class review_of_system:
             **Eyes:** Patient denies, Blurred or vision loss, Discharge itching or eye pain.
             **Heme/lymphatic:** Patient denies, Abnormal bruising, Bleeding, Lymphadenopathy.
             **Endocrine:** Patient denies, Excessive thirst or hunger, Heat or cold intolerance, Skin or hair changes, Weight gain or loss.
-            **Dentistry:** Patient denies, Toothache. 
+            **Dentistry:** Patient denies, Toothache.
         """
         messages = [{'role': 'system', 'content': system},
                     {'role': 'user', 'content': f"{self.delimiter}{few_shot_user_1}{self.delimiter}"},
@@ -547,19 +547,14 @@ class review_of_system:
 
 class physical_exam:
     def __init__(self, post_date, delimiter="####"):
-        self.post_date = post_date
+        self.post_data = post_date
         self.delimiter = delimiter
         result = self.final()
         self.result = result
-
     def final(self):
         response_1 = ""
-        if "Type of visit: Follow Up" in self.post_date:
-            response_1 = "Patient is AAO x 3. Not in acute distress. Breathing is non-labored. Normal respiratory effort. The affect is normal and appropriate."
-        elif "Type of visit: Office Visit" in self.post_date:
-            response_1 = "Well-nourished and well-developed; in no acute distress. Breathing is non-labored, with normal respiratory effort. The affect is normal and appropriate."
-        elif "Type of visit: Lab/Radiology Review" in self.post_date:
-            response_1 = "Well-nourished and well-developed; in no acute distress. Breathing is non-labored, with normal respiratory effort. The affect is normal and appropriate."
+        if "Type of visit: Follow Up" in self.post_data:
+            response_1 = "Patient is AAO x 3. Not in acute distress. Breathing is non-labored, Normal respiratory effort. The affect is normal and appropriate."
         else:
-            "Physical exam for this is not developed"
+            response_1 = "Currently I can only provide physical exam for Type of visit: Fllow Up"
         return response_1
