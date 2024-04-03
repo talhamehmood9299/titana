@@ -34,6 +34,99 @@ class cpt_code:
     def final(self):
         result = get_cpt_code(self.post_date)
         return result
+class plan_of_care:
+    def __init__(self, post_date, delimiter="####"):
+        self.post_data = post_date
+        self.delimiter = delimiter
+        medication_start = post_date.find("cutformhere:") + len("cutformhere:")
+        medication_end = post_date.find("Doctor dictation")
+        self.medications_text = post_date[medication_start:medication_end].strip()
+        dictation_start = post_date.find("Doctor dictation:") + len("Doctor dictation:")
+        doctor_semi = post_date[dictation_start:].strip()
+        self.diagnosis = extract_text(doctor_semi)
+        self.dictation_final = get_dictation(doctor_semi)
+        result = self.final()
+        self.result = result
+
+    def template_4(self):
+        prompt = """
+           you are a medical assistant. You job is to write a plan of care by following the mentioned rules. let's think step by step.
+               1) First extract the only one associate disease or disorder for each medication if mentioned in the provided text.
+               2) And than write all the medications in the first line separated with comma and write associated disease and disorder with lines plan of care and medication mentioned in the provided text.
+               3) Write the one name of the disease or disorder as the heading and than write lines of plan of care in the form of paragraph.
+               4) Write the short form of disease or disorders
+               5) Include only medication names. Don't add dosage, and SIG (instructions for use).
+               6) Don't add ICD-10 codes.
+               7) Don't add Start Date, Prescribe Date, End Date and Qty of the medication.
+               8) If the disease and disorder is not related with the medication, than don't add the disease or disorder in the \
+               output.
+               9) Add a concise plan of care with 4 to 5 lines for disease or disorder that i will provide.
+               10) Utilize double asterisks for all headings.
+               11) Utilize double asterisks for all "medications".
+               12) Don't suggest any disease, disorder or symptoms for any medication. 
+               13) Don't add heading of "Plan of care, Disease or disorder and "Medication".
+               14) Don't add the disease or disorder in the output if no medication is mentioned in the provided text.
+               15) If no medication is mentioned in the provided text than return these lines and also add at the end of every output if the medication is available.
+               "**Compliance** with medications has been stressed.
+               Continue other medications.
+               Side effects, risks, and complications were clearly explained and the patient verbalized understanding and was given the opportunity to ask questions.
+               Relaxation techniques were discussed, stress avoidance was reviewed, and medication and yoga were encouraged."
+               16) It is Mandatory to conclude the plan of care with this line "Follow-up as scheduled"
+           """
+
+        user_text = f"""
+              Write a concise plan of care with 4 to 5 lines for disease or disorder if the related medication and the doctor dication is linked with it.
+              It is mandatory to write only one heading of disease or disorder for one mentioned medication.
+              Don't add the disease or disorder in the output if no medication is mentioned in the provided text.
+              The disease or disorders are delimited by triple backticks.
+              '''{self.diagnosis}'''
+
+              The medications are delimited by triple dashes.
+              ---{self.medications_text}---
+
+              The doctor dictation is delimited by triple hashtags.
+              ###{self.dictation_final}###
+               """
+        few_shot_user_1 = """
+           Write a plan of care. Don't add the output in the future responses. 
+           write only one heading of disease or disorder for one mentioned medication.
+
+           """
+        few_shot_user_2 = """
+           Write a plan of care. Don't add the output in the future responses.
+           Write only one heading of disease or disorder for one mentioned medication.
+           """
+        few_shot_assistant_1 = """
+           Continue with metformin and levothyroxine.
+           **Hyperlipidemia**: Dietary instruction about hyperlipidemia given to the patient. Eat a diet low in saturated and trans fats. Include lots of fruits, vegetables, beans, nuts, whole grains, and fish regularly into your diet. Stop eating red meat and processed meats like bacon, sausage, and cold cuts. Drink skim or low-fat milk.
+           **GERD**: Recommended to eat slowly, chew well every bite for at least 20-25 times before swallowing. Do not talk, read or watch TV while eating. Eat small portions, frequently, at least every 3-h. No large meals. Avoid Tobacco, alcohol, greasy, acidic, or spicy food, coffee, and carbonated beverages. Sip plain water between bites. Avoid eating within 2 hours before bedtime. Walk after the meal.
+           Compliance with medications has been stressed. Continue other medications. Side effects, risks, and complications were clearly explained and the patient verbalized understanding and was given the opportunity to ask questions. Relaxation techniques were discussed, stress avoidance was reviewed, medication and yoga were encouraged.
+
+           **Follow-up as scheduled**.
+
+           """
+        few_shot_assistant_2 = """
+           "**Compliance** with medications has been stressed.
+           Continue other medications.
+           Side effects, risks, and complications were clearly explained and the patient verbalized understanding and was given the opportunity to ask questions.
+           Relaxation techniques were discussed, stress avoidance was reviewed, and medication and yoga were encouraged."
+           **Follow-up as scheduled**.
+           """
+
+        messages = [{'role': 'system', 'content': prompt},
+                    {'role': 'user', 'content': f"{self.delimiter}{few_shot_user_1}{self.delimiter}"},
+                    {'role': 'assistant', 'content': few_shot_assistant_1},
+                    {'role': 'user', 'content': f"{self.delimiter}{few_shot_user_2}{self.delimiter}"},
+                    {'role': 'assistant', 'content': few_shot_assistant_2},
+                    {'role': 'user', 'content': f"{self.delimiter}{user_text}{self.delimiter}"}]
+
+        response = get_completion(messages)
+
+        return response
+
+    def final(self):
+        response = self.template_4()
+        return response
 
 class histroy_of_illness:
     def __init__(self, post_date, delimiter="####"):
