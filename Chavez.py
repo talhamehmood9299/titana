@@ -235,3 +235,17 @@ class histroy_of_illness:
 
         general = self.combine_the_text(basic_data, history, template)
         return general
+
+class physical_exam:
+    def __init__(self, post_date, delimiter="####"):
+        self.post_data = post_date
+        self.delimiter = delimiter
+        result = self.final()
+        self.result = result
+    def final(self):
+        response_1 = ""
+        if "Type of visit: Follow Up" in self.post_data:
+            response_1 = "AAO X 3; not in respiratory distress"
+        else:
+            response_1 = "Currently I can only provide physical exam for Type of visit: Fllow Up"
+        return response_1
