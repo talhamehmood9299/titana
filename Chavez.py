@@ -16,9 +16,6 @@ def task(task_string, post_date):
     elif "Task 4:" == task_string:
         instance = physical_exam(post_date)
         response = instance.result
-    elif "Task 5:" == task_string:
-        instance = review_of_system(post_date)
-        response = instance.result
     else:
         response = "Task is not justified"
     return response
