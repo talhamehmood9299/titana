@@ -2,6 +2,7 @@ import openai
 from labs_radiology import get_lab_results
 from extra_functions import extract_text, get_completion, get_dictation, clear_lines_above_and_containing, get_cpt_code
 
+
 def task(task_string, post_date):
     if "Task 1:" == task_string:
         instance = history_of_illness(post_date)
@@ -33,6 +34,7 @@ class cpt_code:
     def final(self):
         result = get_cpt_code(self.post_date)
         return result
+
 
 class history_of_illness:
     def __init__(self, post_date, delimiter="####"):
@@ -171,9 +173,9 @@ class history_of_illness:
 				**No other medical concerns in today's appointment**.\n \
 				"""
         messages_2 = [{'role': 'system', 'content': system_2},
-					  {'role': 'user', 'content': f"{self.delimiter}{few_shot_1}{self.delimiter}"},
-					  {'role': 'assistant', 'content': result_1},
-					  {'role': 'user', 'content': f"{self.delimiter}{prompt_2}{self.delimiter}"}]
+                      {'role': 'user', 'content': f"{self.delimiter}{few_shot_1}{self.delimiter}"},
+                      {'role': 'assistant', 'content': result_1},
+                      {'role': 'user', 'content': f"{self.delimiter}{prompt_2}{self.delimiter}"}]
 
         response = get_completion(messages_2)
         return response
@@ -258,10 +260,10 @@ class plan_of_care:
         return response
 
     def final(self):
-        
         response = self.template_2()
 
         return response
+
 
 class review_of_system:
     def __init__(self, post_date, delimiter="####"):
@@ -422,11 +424,7 @@ class physical_exam:
     def final(self):
         response_1 = ""
         if "Type of visit: Follow Up" in self.post_data:
-            response_1 = "Patient is AAO x 3. Not in acute distress. Breathing is non-labored. Normal respiratory effort. The affect is normal and appropriate."
-        elif "Type of visit: Office Visit" in self.post_data:
-            response_1 = "Well-nourished and well-developed; in no acute distress. Breathing is non-labored, with normal respiratory effort. The affect is normal and appropriate."
-        elif "Type of visit: Lab/Radiology Review" in self.post_data:
-            response_1 = "Well-nourished and well-developed; in no acute distress. Breathing is non-labored, with normal respiratory effort. The affect is normal and appropriate."
+            response_1 = "AAO X 3; not in respiratory distress."
         else:
-            "Physical exam for this is not developed"
+            response_1 = "Currently I can only provide physical exam for Type of visit: Fllow Up"
         return response_1
