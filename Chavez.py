@@ -1,5 +1,5 @@
 import openai
-from extra_functions import get_completion, clear_lines_above_and_containing, get_cpt_code
+from extra_functions import get_completion, clear_lines_above_and_containing, get_cpt_code, extract_text, get_dictation
 from hpi import get_templates
 
 
