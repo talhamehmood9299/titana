@@ -36,7 +36,7 @@ class cpt_code:
         return result
 
 
-class history_of_illness:
+class histroy_of_illness:
     def __init__(self, post_date, delimiter="####"):
         self.post_data = post_date
         self.delimiter = delimiter
@@ -176,7 +176,7 @@ class history_of_illness:
                       {'role': 'user', 'content': f"{self.delimiter}{prompt_2}{self.delimiter}"}]
 
         response = get_completion(messages_2)
-        return response.content
+        return response
 
 
 class plan_of_care:
