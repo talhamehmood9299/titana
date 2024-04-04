@@ -194,6 +194,14 @@ class histroy_of_illness:
         response = get_completion(messages_1)
         print(response)
 
+        # Split the text into lines
+        lines = response.split('\n')
+
+        # Extract the last line
+        history = lines[-1].strip()
+
+        return history
+
     def final(self):
         basic_data = self.get_basic_information()
         history = self.get_history()
