@@ -1,7 +1,7 @@
 from labs_radiology import get_lab_results
 from extra_functions import extract_text, get_completion, get_dictation
 
-def task(post_data):
+def task(task_string, post_date):
     if "Task 1:" in post_data:
         instance = history_of_illness(post_data)
         response = instance.result
