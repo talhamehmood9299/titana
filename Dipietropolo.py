@@ -77,8 +77,8 @@ class history_of_illness():
             {"role": "user", "content": f"{self.post_data}"}]
 
         result = get_completion(messages)
-        print(result.content)
-        return result.content
+        print(result)
+        return result
 
     def hoi(self):
         introduction_line = ("I introduced myself as her Healthcare Provider and the Medical Assistant will be doing "
@@ -121,8 +121,8 @@ class history_of_illness():
         ]
 
         result = get_completion(messages)
-        print(result.content)
-        return result.content
+        print(result)
+        return result
 
     def obj(self):
         objective = """
@@ -227,5 +227,5 @@ class plan_of_care():
         ]
 
         result = get_completion(messages)
-        print(result.content)
-        return result.content
+        print(result)
+        return result
