@@ -74,7 +74,7 @@ class history_of_illness():
             {"role": "system", "content": f"{system}"},
             {"role": "user", "content": f"{doctor_dictations}"},
             {"role": "assistant", "content": f"{few_shot_assistant_text}"},
-            {"role": "user", "content": f"{post_data}"}]
+            {"role": "user", "content": f"{self.post_data}"}]
 
         result = get_completion(messages)
         print(result.content)
