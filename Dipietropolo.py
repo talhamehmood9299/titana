@@ -1,220 +1,231 @@
-import openai
-from extra_functions import extract_text, get_completion, get_dictation
 from labs_radiology import get_lab_results
-from extra_functions import extract_text, get_completion, get_dictation, clear_lines_above_and_containing, get_cpt_code
-from hpi import get_templates
+from extra_functions import extract_text, get_completion, get_dictation
 
-def task(task_string, post_date):
-    if "Task 1:" == task_string:
-        instance = histroy_of_illness(post_date)
+def task(post_data):
+    if "Task 1:" in post_data:
+        instance = history_of_illness(post_data)
         response = instance.result
-    elif "Task 3:" == task_string:
-        instance = cpt_code(post_date)
+    elif "Task 2:" in post_data:
+        instance = plan_of_care(post_data)
         response = instance.result
     else:
         response = "Task is not justified"
     return response
 
-class cpt_code:
-    def __init__(self, post_date, delimiter="####"):
-        self.post_date = post_date
-        self.delimiter = delimiter
-        result = self.final()  # Call the final() method and store the result
-        self.result = result  # Store the result as an attribute
-
-    def final(self):
-        result = get_cpt_code(self.post_date)
-        return result
-
-class histroy_of_illness:
-    def __init__(self, post_date, delimiter="####"):
+class history_of_illness():
+    def __init__(self, post_date):
         self.post_data = post_date
-        self.delimiter = delimiter
-        result = self.final()  # Call the final() method and store the result
-        self.result = result  # Store the result as an attribute
+        result = self.hoi()
+        self.result = result
+        result1 = self.ros()  # Call the final() method and store the result
+        self.result1 = result1  # Store the result as an attribute
+        result2 = self.obj()
+        self.result2 = result2
 
-    def get_basic_information(self):
-        system_0 = """
-        Remove all the disease or disorders mentioned from the text delimited by triple backticks and rearrange the remaining text.
-        The headings should be:
-        1) Patient demographics.
-        2) Type of Visit.
-        3) Medications.
-        Note: Write only medication name and Sig in this heading. Don't write the Qty, Start Date:, Prescribe Date:  and End Date:
-        4) Doctor Dictation.
-        Note: Pick the doctor dictation that is after the "Doctor Dictation:" in the provided text.
-            """
-        prompt_0 = f"""
-        Remove all the disease or disorders mentioned from the text delimited by triple backticks and rearrange the remaining text.
-        ```{self.post_data}```
+    def ros(self):
+        ros = """
+            Anxiety: Managed,
+            Depression: Maneged,
+            Mania: Denies symptoms,
+            OCD: Denies symptoms,
+            Trauma: No History of Trauma,
+            Psychosis: Denies symptoms, no symptoms endorsed during interaction,
+            Disordered Eating: Denies symptoms,
+            ADHD: Not Diagnosed,
+            ODD/Conduct/Antisocial: No symptoms evident,
+            Personality Disorder Traits: No symptoms evident,
+            Sleep: Denies Sleeping difficulty or disturbances
         """
-        messages_0 = [
-            {'role': 'system', 'content': system_0},
-            {'role': 'user', 'content': f"{self.delimiter}{prompt_0}{self.delimiter}"}
-        ]
-        basic_info = get_completion(messages_0)
-        return basic_info
 
-    def get_history(self):
-        system_1 = f"""
-        As a medical assistant, your task is to check for the presence of a doctor's dictation section, typically located\
-        after the heading "doctor dictation."
-        If the "doctor dictation" and medications are available, focus on extracting diseases or disorders that are directly related \
-        to "doctor dictation" and related to mentioned medications. In cases where the doctor's dictation is absent, rely solely \
-        on mentioned medications. It is mandatory to write the reason of extraction.
-        Don't extract the disease or disorder if no medication mentioned directly related to this disorder.
-        If the "doctor dictation" and any medication is not mentioned in the provided text than extract only first five 
-        disease or disorders. In this case the sentence should be start from "The previous history of the patient is "
-        Don't add the BMI in the output.
-        Write the short form of disease or disorders. Don't write the complete name.
-        Don't extract the disease or disorder on the base of causes of medications.
-        Don't add the word "unspecified" in the output
-        Return "Noting" if no "doctor dictation" and medications are related to disease or disorder.
-        At the end it is necessary to write the related disease or disorders in one line.
-      """
-        prompt_1 = f"""
-        Based on the doctor's dictation and mentioned medications, Choose the diseases or disorders that are directly\
-        related to the doctor's dictation and mentioned medications from the text 
-        delimited by triple backticks.
-        Don't add the BMI in the output.
-        At the end it is necessary to write the related disease or disorders in one line.
-        ```{self.post_data}```
-    """
+        system = f"""You work as a medical assistant and are tasked with updating a text delimited by triple backticks.
+        ```{str(ros)}```
+        The list includes medical conditions and their associated symptoms. Your job is to replace any status of symptoms in the list 
+        with new ones if related symptoms are mentioned in the provided text. If no related symptoms are mentioned, 
+        do not make any changes to the list.
+        Write only 2 words of status of symptoms.
+        Add the heading of "**Psychiatric ROS** in double astrikes in the output "
+        Use double astrikes for all the conditions.
+        Don't add the backticks in the output.
 
-        few_shot_user_1 = """
-        Based on the doctor's dictation and mentioned medications, Choose the diseases or disorders that are directly\
-        related to the doctor's dictation and mentioned medications from the text 
-        delimited by triple backticks.
-        Don't add the BMI in the output.
-        At the end it is necessary to write the related disease or disorders in one line.
-            """
+        """
 
-        few_shot_assistant_1 = """ 
-        1) Sleep deprivation - related to the medication hydroxyzine HCl which is used for allergies and sleep.
-        2) Insomnia - related to the medication hydroxyzine HCl which is used for sleep.
-        3) Angina pectoris - related to the medication Klonopin which is used for anxiety and panic disorders.
-        4) Chronic cough and Dysphonia - related to the medication Cepacol Sore Throat which is used for sore throat.
-        The patient has a history of sleep deprivation, insomnia, angina pectoris, Anxiety, chronic cough and dysphonia.
-         """
-        few_shot_user_2 = """
-        Based on the doctor's dictation and mentioned medications, Choose the diseases or disorders that are directly\
-        related to the doctor's dictation and mentioned medications from the text 
-        delimited by triple backticks.
-        Don't add the BMI in the output.
-        At the end it is necessary to write the related disease or disorders in one line.
-            """
+        doctor_dictations = ("Your job is to replace any symptoms in the list with new ones if related symptoms are "
+                             "mentioned in the provided text")
 
-        few_shot_assistant_2 = """ 
-        1) Anxiety disorder- related to the doctor's dictation which is mentioned in the text. 
-        The patient disease or disorder is Anxiety.
-         """
+        few_shot_user_text = " He reports Anxiety attacks due to sleep difficulties and forgetfulness."
 
-        messages_1 = [
-            {'role': 'system', 'content': system_1},
-            {'role': 'user', 'content': f"{self.delimiter}{few_shot_user_1}{self.delimiter}"},
-            {'role': 'assistant', 'content': f"{few_shot_assistant_1}"},
-            {'role': 'user', 'content': f"{self.delimiter}{few_shot_user_2}{self.delimiter}"},
-            {'role': 'assistant', 'content': f"{few_shot_assistant_2}"},
-            {'role': 'user', 'content': f"{self.delimiter}{prompt_1}"}
-        ]
-        response = get_completion(messages_1)
-        print(response)
+        few_shot_assistant_text = ("""
+        **Psychiatric ROS**
 
-        # Split the text into lines
-        lines = response.split('\n')
+          **Anxiety**: Reports Anxiety attacks,
+          **Depression**: Managed,
+          **Mania**: Denies symptoms,
+          **OCD**: Denies symptoms,
+          **Trauma**: No History of Trauma,
+          **Psychosis**: Denies symptoms, no symptoms endorsed during interaction,
+          **Disordered Eating**: Denies symptoms,
+          **ADHD**: Reports forgetfulness,
+          **ODD/Conduct/Antisocial**: No symptoms evident,
+          **Personality Disorder Traits**: No symptoms evident,
+          **Sleep**: Reports Sleep difficulties
+          """)
 
-        # Extract the last line
-        history = lines[-1].strip()
+        messages = [
+            {"role": "system", "content": f"{system}"},
+            {"role": "user", "content": f"{doctor_dictations}"},
+            {"role": "assistant", "content": f"{few_shot_assistant_text}"},
+            {"role": "user", "content": f"{post_data}"}]
 
-        return history
+        result = get_completion(messages)
+        print(result.content)
+        return result.content
 
-    def combine_the_text(self, basic_data, history, template):
+    def hoi(self):
+        introduction_line = ("I introduced myself as her Healthcare Provider and the Medical Assistant will be doing "
+                             "Medical Documentation accompanying me.")
 
         system_2 = f"""
-        You are a medical assistant and you job is to write a history of illness of the patient.
-        The text contains the patient demographics, History of  disease or disorder, Medications and Doctor dictation.
-        Please write a History of illness based on the text delimited by the triple backticks.lets think step by step.
-        First line contains the patient demographics and provided 'history line'. Don't add the medications in this line.
-        Second line contains the patient current complains with prescribe medication if available.
-        Write the follow up information of disease or disorder in a line separately with only related medications.
-        It is necessary to concluded with "**No other medical concerns in today's appointment**".
-        Don't add the headings.
-        Don't repeat the medical history.
-        Utilize double asterisks for name, type of visit and medication.
-        Make sure all the provided text is added in the output, 
-        and nothing is missed in the output.
-
-    """
-        prompt_2 = f"""
-                Please write a History of illness in based on the text delimited by the triple backticks,\
-                ```{basic_data}```
-                the the patient history is delimited by triple dashes,
-                ---{history}---
-                other text is delimited by triple brackets.
-                {{{template}}}
-                and concluded with "No other medical concerns in today's appointment".
-                """
-        few_shot_1 = """Write a history of illness of the patient based on the text that I will provide"""
-        result_1 = """\
-        Calvin Mcrae, a 71-year-old male, came in for a follow-up visit. He has a medical history of Hypertension (HTN), Hypothyroidism, and a history of cellulitis of the face.\n \
-        Patient is following up on hypertension and hypothyroidism. He denies symptoms such as headaches, dizziness, diaphoresis, nausea/vomiting, fatigue, weakness, palpitations, leg cramps, peripheral edema, vision changes, chest pain, and shortness of breath. Mr. Mcrae is compliant with his medications which include Vitamin D2 1,250 mcg (50,000 unit) capsule, amlodipine 5 mg tablet, levothyroxine 50 mcg tablet, and cefadroxil 500 mg capsule. He denies any untoward side effects from these medications. He requested a medication refill during this visit.\n \
-
-        He is following up on diabetes. She denies experiencing symptoms such as polydipsia, polyphagia, and polyuria. There are also no reports of peripheral edema, vision changes, diaphoresis, tingling or numbness of the limbs, lesions on the feet, palpitations, chest pain, and shortness of breath. She is compliant with her medications which include OneTouch Ultra Test strips, OneTouch UltraSoft Lancets, metformin 500 mg tablet.\n \
-        He reported that he had a sexual encounter and his wife developed a yeast infection, which caused him concern. He is an occasional smoker. He also reported having a pimple or infected cyst, which may have developed after a sexual encounter. An EKG was performed and the records were noted.\n \
-        He had an infection of the upper lip and experienced irregular heartbeats. His conditions of importance include hypertension and hypothyroidism.\n \
-        **No other medical concerns in today's appointment**.\n \
-        """
-
-        messages_2 = [{'role': 'system', 'content': system_2},
-                      {'role': 'user', 'content': f"{self.delimiter}{few_shot_1}{self.delimiter}"},
-                      {'role': 'assistant', 'content': result_1},
-                      {'role': 'user', 'content': f"{self.delimiter}{prompt_2}{self.delimiter}"}]
-
-        response = get_completion(messages_2)
-        return response
-
-    def final(self):
-        if "Type of visit: Lab/Radiology Review" in self.post_data:
-            basic_data = self.get_basic_information()
-
-            history = self.get_history()
-
-            template = "Nothing"
-            general = self.combine_the_text(basic_data, history, template)
-            lab = get_lab_results()
-            final_response = f"{general}. {lab}"
-
-            few_shot_2 = """Write a history of illness of the patient based on the text that I will provide"""
-            result_2 = """\
-            This is a 42-year-old male who presented today for a follow-up on opioid dependence, ADHD, depression, anxiety, and Lab review.\n \
-            The patient is following up on Anxiety and continues on (Alprazolam 1mg) which is helping him with his symptoms. He can function and perform his ADL. He states he takes his medications regularly. He denies fatigue, body aches, n/v/d, and constipation. He denies chest pain and shortness of breath. He denies hallucinations, panic attacks, suicidal ideations, and dangerous ideations. He has a good appetite and sleep. The patient is following up on attention deficit disorder and continues on Adderall 5mg in combination with Adderall 20mg. Per the patient, Adderall is helping him to focus and concentrate while reading and doing other tasks. Denies headache or dizziness. Requesting for a prescription renewal.\n \
-            He is also following up on Lab review results show that Glucose is 100, WBC count 2.9, Absolute 986,\n \
-            eGFR is 110, Creatinine is 0.88, WHITE BLOOD CELL COUNT 2.9 HEMOGLOBIN A1c 5.1\n \
-            **No other medical concerns in today's appointment**.\n \
+            You are a medical assistant. Your job is to write a history of illness based on the text that i will provide.
+            The first line contains the patient demographics and than write this sentence without any changes"{introduction_line}".
+            The second lines contains the text that patient reports in doctor dictations. 
+            The third line must contain this sentence "Denied SI/HI, panic attacks, or AVH. No report of difficulty sleeping or loss of appetite."
+            Than write the heading of "Current CNS medications" and write all the mentioned medications with the short sig under this 
+            heading in the form of bullets. Use double astrikes for this heading.
+            Use double astrikes for patient name.
+            Don't add the End date, prescribe date, start date, quantity.
+            Don't add the previous responses.
             """
 
-            system_1 = (f""" You are a medical assistant and you job is to write a history of illness of the patient.
-            The text contains the patient demographics, History of  disease or disorder, Medications and Doctor dictation.
-            Please write a History of illness based on the text delimited by the triple backticks.lets think step by step.
-            First line contains the patient demographics and provided 'history line'. Don't add the medications in this line.
-            Second line contains the patient current complains with prescribe medication if available.
-            Write the follow up information of disease or disorder in a line separately with only related medications.
-            It is necessary to concluded with "**No other medical concerns in today's appointment**".
-            Don't add the headings.
-            Don't repeat the lines.
-            Utilize double asterisks for name, type of visit and medication.
-            Make sure all the provided text is added in the output, 
-            and nothing is missed in the output.
-                        """)
-            messages_4 = [{'role': 'system', 'content': system_1},
-                          {'role': 'user', 'content': f"{self.delimiter}{few_shot_2}{self.delimiter}"},
-                          {'role': 'assistant', 'content': result_2},
-                          {'role': 'user', 'content': f"{self.delimiter}{final_response}{self.delimiter}"}]
-            response = get_completion(messages_4)
-            return response
-        else:
-            basic_data = self.get_basic_information()
-            history = self.get_history()
-            template = "Nothing"
-            general = self.combine_the_text(basic_data, history, template)
-            return general
+        user_text = "Your job is to write a history of illness based on the text that i will provide."
+
+        assistant_text = """**Diane Kuriloff** is a 67-year-old female patient who has a history of Anxiety. I introduced 
+            myself as her Healthcare Provider and the Medical Assistant will be doing Medical Documentation accompanying me.
+            She was prescribed Xanax 0.5 Daily PRN Anxiety 10 tabs per month. She reports that medication is working well 
+            with the medication.
+            Denied SI/HI, panic attacks, or AVH. No report of difficulty sleeping or loss of appetite. 
+
+            **Current CNS medications**:
+             - Xanax 0.5 Daily PRN Anxiety
+            """
+
+        prompt = f"""
+            You are a medical assistant. Your job is to write a history of illness based on the text delimited by triple backticks.
+            ```{post_data}```
+            """
+
+        messages = [
+            {"role": "system", "content": f"{system_2}"},
+            {"role": "user", "content": f"{user_text}"},
+            {"role": "assistant", "content": f"{assistant_text}"},
+            {"role": "user", "content": f"{prompt}"}
+        ]
+
+        result = get_completion(messages)
+        print(result.content)
+        return result.content
+
+    def obj(self):
+        objective = """
+        **OBJECTIVE**
+
+        - **Behavior**: Appropriate
+        - **Concentration**: Intact
+        - **Speech**: Normal with normal rate
+        - **Mood**: Appropriate
+        - **Obsession**: No
+        - **Compulsion**: No
+        - **Memory**: Normal
+        - **Attention**: Focused
+        - **Thought Process**: Coherent
+        - **Thought Content**: Normal
+        - **Cognition/Judgement**: Good
+        - **Safety**: Denies SI/HI
+        """
+        print(objective)
+        return objective
+
+
+class plan_of_care():
+    def __init__(self, post_date):
+        self.post_data = post_date
+        result = self.final()
+        self.result = result
+
+    def final(self):
+        education = """
+            **Education:**
+
+                - Relaxation techniques discussed. Stressors and coping strategies reviewed. Yoga, deep breathing, journaling were 
+                encouraged. UDS will be conducted periodically to monitor therapeutic activity, compliance including 
+                potential misuse, unauthorized drug use, or diversion.
+                - Common side effects of medication were discussed as well as risks, benefits, and alternatives of medications
+                including risk of serotonin syndrome with the medications and advised to the procedures to follow if this were to 
+                occur
+                - The patient has been educated on the risks, benefits, and alternatives of the controlled substances, including but 
+                not limited to nausea, vomiting, constipation, sedation, dizziness, addiction, dependency, and tolerance to 
+                long-term medication usage.
+                - The patient was educated not to drive or operate heavy machinery while on this medication, especially during the 
+                initiation and titration of the medication. Emphasis was placed on tolerance, abuse, and dependence.
+                - The patient was educated on the proper storage and safekeeping of controlled medications. The patient was educated 
+                on the risk of combining opioids with alcohol, sedatives, and illicit substances.
+                **"Limit alcohol, caffeine, and sugar consumption"**
+            """
+
+        system_3 = f"""
+            You are a medical assistant. Your job is to write a plan of care based on the text that i will provide.
+            At first write this line in double astrikes "**NJ PMP Aware checked**".
+            After that write the heading of medications in double astrikes and under this heading all the mentioned medications.\
+            in bullets with their sig and text.
+            Don't add the End date, prescribe date, start date, quantity.
+            Than add text delimited by triple backticks.
+            ```{education}```
+            At the end write about the followup visit in double astrikes.
+            Don't add the previous responses.
+            Don't add the heading of plan of care.
+            Don't add the triple backticks in the output.
+            """
+        prompt = f"""
+            You are a medical assistant. Your job is to write the plan of care based on the text delimited by triple backticks.
+            ```{post_data}```
+            """
+
+        few_shot_user = "You are a medical assistant. Your job is to write a plan of care based on the text"
+
+        few_shot_assistant = """
+            **NJ PMP Aware checked**
+            **Medications:**
+
+            - Prozac increased to 40 mg OD
+            - Klonopin continued(pt has supply, will be due on 04/28/2024)
+            - Trazodone continued at the same dose.
+
+            **Education:**
+
+            - Relaxation techniques discussed. Stressors and coping strategies reviewed. Yoga, deep breathing, journaling were 
+            encouraged. UDS will be conducted periodically to monitor therapeutic activity, compliance including 
+            potential misuse, unauthorized drug use, or diversion.
+            - Common side effects of medication were discussed as well as risks, benefits, and alternatives of medications
+            including risk of serotonin syndrome with the medications and advised to the procedures to follow if this were to 
+            occur
+            - The patient has been educated on the risks, benefits, and alternatives of the controlled substances, including but 
+            not limited to nausea, vomiting, constipation, sedation, dizziness, addiction, dependency, and tolerance to 
+            long-term medication usage.
+            - The patient was educated not to drive or operate heavy machinery while on this medication, especially during the 
+            initiation and titration of the medication. Emphasis was placed on tolerance, abuse, and dependence.
+            - The patient was educated on the proper storage and safekeeping of controlled medications. The patient was educated 
+            on the risk of combining opioids with alcohol, sedatives, and illicit substances.
+            **"Limit alcohol, caffeine, and sugar consumption"**
+
+
+            **Follow-up: One Month**
+            """
+        messages = [
+            {"role": "system", "content": f"{system_3}"},
+            {"role": "user", "content": f"{few_shot_user}"},
+            {"role": "assistant", "content": f"{few_shot_assistant}"},
+            {"role": "user", "content": f"{prompt}"}
+        ]
+
+        result = get_completion(messages)
+        print(result.content)
+        return result.content
