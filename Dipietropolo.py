@@ -110,7 +110,7 @@ class history_of_illness():
 
         prompt = f"""
             You are a medical assistant. Your job is to write a history of illness based on the text delimited by triple backticks.
-            ```{post_data}```
+            ```{self.post_data}```
             """
 
         messages = [
@@ -186,7 +186,7 @@ class plan_of_care():
             """
         prompt = f"""
             You are a medical assistant. Your job is to write the plan of care based on the text delimited by triple backticks.
-            ```{post_data}```
+            ```{self.post_data}```
             """
 
         few_shot_user = "You are a medical assistant. Your job is to write a plan of care based on the text"
