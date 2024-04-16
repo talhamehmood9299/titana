@@ -3,7 +3,7 @@ from extra_functions import extract_text, get_completion, get_dictation
 
 def task(task_string, post_date):
     if "Task 1:" == task_string:
-        instance = histroy_of_illness(post_date)
+        instance = history_of_illness(post_date)
         response = instance.result
     elif "Task 2:" == task_string:
         instance = plan_of_care(post_date)
