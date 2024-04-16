@@ -2,11 +2,11 @@ from labs_radiology import get_lab_results
 from extra_functions import extract_text, get_completion, get_dictation
 
 def task(task_string, post_date):
-    if "Task 1:" in post_data:
-        instance = history_of_illness(post_data)
+    if "Task 1:" == task_string:
+        instance = histroy_of_illness(post_date)
         response = instance.result
-    elif "Task 2:" in post_data:
-        instance = plan_of_care(post_data)
+    elif "Task 2:" == task_string:
+        instance = plan_of_care(post_date)
         response = instance.result
     else:
         response = "Task is not justified"
