@@ -15,12 +15,11 @@ def task(task_string, post_date):
 class history_of_illness():
     def __init__(self, post_date):
         self.post_data = post_date
-        result = self.hoi()
-        self.result = result
-        result1 = self.ros()  # Call the final() method and store the result
-        self.result1 = result1  # Store the result as an attribute
+        result0 = self.hoi()
+        result1 = self.ros()
         result2 = self.obj()
-        self.result2 = result2
+        result = f"{result0}\n{result1}\n{result2}"
+        self.result = result
 
     def ros(self):
         ros = """
@@ -77,8 +76,8 @@ class history_of_illness():
             {"role": "user", "content": f"{self.post_data}"}]
 
         result = get_completion(messages)
-        print(result)
-        return result
+        print(result.content)
+        return result.content
 
     def hoi(self):
         introduction_line = ("I introduced myself as her Healthcare Provider and the Medical Assistant will be doing "
@@ -121,7 +120,6 @@ class history_of_illness():
         ]
 
         result = get_completion(messages)
-        print(result)
         return result
 
     def obj(self):
@@ -141,8 +139,8 @@ class history_of_illness():
         - **Cognition/Judgement**: Good
         - **Safety**: Denies SI/HI
         """
-        print(objective)
         return objective
+
 
 
 class plan_of_care():
@@ -227,5 +225,5 @@ class plan_of_care():
         ]
 
         result = get_completion(messages)
-        print(result)
-        return result
+        final_response = result + '\n' + education
+        return final_response
