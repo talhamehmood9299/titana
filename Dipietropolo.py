@@ -15,14 +15,13 @@ def task(task_string, post_date):
 class history_of_illness():
     def __init__(self, post_date):
         self.post_data = post_date
-        result = self.hoi()
-        self.result = result
-        result1 = self.ros()  # Call the final() method and store the result
-        self.result1 = result1  # Store the result as an attribute
+        result0 = self.hoi()
+        result1 = self.ros()
         result2 = self.obj()
-        self.result2 = result2
+        result = f"{result0}\n{result1}\n{result2}"
+        self.result = result
 
-    def ros(self):
+        def ros(self):
         ros = """
             Anxiety: Managed,
             Depression: Maneged,
@@ -34,50 +33,84 @@ class history_of_illness():
             ADHD: Not Diagnosed,
             ODD/Conduct/Antisocial: No symptoms evident,
             Personality Disorder Traits: No symptoms evident,
-            Sleep: Denies Sleeping difficulty or disturbances
+            Sleep: Denies Sleeping difficulty, Reports sleeping issues
         """
 
         system = f"""You work as a medical assistant and are tasked with updating a text delimited by triple backticks.
         ```{str(ros)}```
-        The list includes medical conditions and their associated symptoms. Your job is to replace any status of symptoms in the list 
-        with new ones if related symptoms are mentioned in the provided text. If no related symptoms are mentioned, 
-        do not make any changes to the list.
-        Write only 2 words of status of symptoms.
-        Add the heading of "**Psychiatric ROS** in double astrikes in the output "
-        Use double astrikes for all the conditions.
+        The list includes medical conditions and their associated symptoms. Your job is to replace any symptoms in the list 
+        with new ones if related symptoms are mentioned in the provided text. Replace the symptoms by choosing new ones from these provided options only,
+		``` Anxiety: Denies symptoms, Managed
+		   Depression: Denies symptoms, Managed
+		   Mania: Denies symptoms
+		   OCD: Denies symptoms 
+		   Trauma: No History of Trauma, history of trauma, childhood trauma, sexual abuse, physical abuse
+		   Psychosis: Denies symptoms, no symptoms endorsed during interaction 
+		   Disordered Eating: Denies symptoms
+		   ADHD: Not Diagnosed, Able to focus with medication
+		   ODD/Conduct/Antisocial: No symptoms evident, 
+		   Personality Disorder Traits: No symptoms evident 
+		   Sleep: Denies Sleeping difficulty, Reports sleeping issues ```
+		   
+		choose the one option by following these rules:
+		1) Read the text carefully if the provided symptoms text's meaning is semantically positive then choose the positive option from the above list
+		2) Read the text carefully if the provided symptoms text's meaning is semantically negative then choose the negative option from the above list
+		
+		If no related symptoms are mentioned,
+        do not make any changes to the list
+        Write only 2 words of status of symptoms
+        Add the heading of "**Psychiatric ROS** in double asteriks in the output"
+        Use double asteriks for all the conditions
         Don't add the backticks in the output.
 
         """
 
-        doctor_dictations = ("Your job is to replace any symptoms in the list with new ones if related symptoms are "
-                             "mentioned in the provided text")
 
-        few_shot_user_text = " He reports Anxiety attacks due to sleep difficulties and forgetfulness."
+        few_shot_user1_text = "Patient seen for follow-up reports current meds are effective in managing symptoms of anxiety and ADHD, reports mood as good, denies any issues with depression, sleep or appetite, refilled medications at current doses at verified pharmacy on file, follow-up in one month."
 
-        few_shot_assistant_text = ("""
+        few_shot_assistant1_text = ("""
         **Psychiatric ROS**
 
-          **Anxiety**: Reports Anxiety attacks,
+          **Anxiety**: Managed,
           **Depression**: Managed,
           **Mania**: Denies symptoms,
           **OCD**: Denies symptoms,
           **Trauma**: No History of Trauma,
-          **Psychosis**: Denies symptoms, no symptoms endorsed during interaction,
+          **Psychosis**: Denies symptoms,
           **Disordered Eating**: Denies symptoms,
-          **ADHD**: Reports forgetfulness,
+          **ADHD**: Not Diagnosed,
           **ODD/Conduct/Antisocial**: No symptoms evident,
           **Personality Disorder Traits**: No symptoms evident,
-          **Sleep**: Reports Sleep difficulties
+          **Sleep**: Denies Sleeping difficulty
           """)
+
+        few_shot_user2_text = "Patient seen for follow-up reports anxiety levels not good at all, Reports that he's had multiple panic attacks over the last 15 days. Reports poor sleep. Reports decreased functioning. Reports some depressive symptoms. Discussed current medications. Reports that he feels that Zoloft is not doing anything for anxiety. Reports higher dose of Zoloft made anxiety worse."
+
+        few_shot_assistant2_text = ("""
+                **Psychiatric ROS**
+
+                  **Anxiety**: Managed,
+                  **Depression**: Managed,
+                  **Mania**: Denies symptoms,
+                  **OCD**:  Deniessymptoms,
+                  **Trauma**: No History of Trauma,
+                  **Psychosis**: Denies symptoms,
+                  **Disordered Eating**: Denies symptoms,
+                  **ADHD**: Not Diagnosed,
+                  **ODD/Conduct/Antisocial**: No symptoms evident,
+                  **Personality Disorder Traits**: No symptoms evident,
+                  **Sleep**: Reports sleeping issues
+                  """)
 
         messages = [
             {"role": "system", "content": f"{system}"},
-            {"role": "user", "content": f"{doctor_dictations}"},
-            {"role": "assistant", "content": f"{few_shot_assistant_text}"},
+            {"role": "user", "content": f"{few_shot_user1_text}"},
+            {"role": "assistant", "content": f"{few_shot_assistant1_text}"},
+            {"role": "user", "content": f"{few_shot_user2_text}"},
+            {"role": "assistant", "content": f"{few_shot_assistant2_text}"},
             {"role": "user", "content": f"{self.post_data}"}]
 
         result = get_completion(messages)
-        print(result)
         return result
 
     def hoi(self):
@@ -121,7 +154,6 @@ class history_of_illness():
         ]
 
         result = get_completion(messages)
-        print(result)
         return result
 
     def obj(self):
@@ -141,8 +173,8 @@ class history_of_illness():
         - **Cognition/Judgement**: Good
         - **Safety**: Denies SI/HI
         """
-        print(objective)
         return objective
+
 
 
 class plan_of_care():
@@ -227,5 +259,5 @@ class plan_of_care():
         ]
 
         result = get_completion(messages)
-        print(result)
-        return result
+        final_response = result + '\n' + education
+        return final_response
