@@ -21,7 +21,7 @@ class history_of_illness():
         result = f"{result0}\n{result1}\n{result2}"
         self.result = result
 
-        def ros(self):
+    def ros(self):
         ros = """
             Anxiety: Managed,
             Depression: Maneged,
