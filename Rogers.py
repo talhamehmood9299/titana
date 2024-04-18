@@ -123,8 +123,8 @@ class history_of_illness():
             The second lines contains the text that patient reports in doctor dictations. 
             The third line must contain this sentence "Denied SI/HI, panic attacks, or AVH. No report of difficulty sleeping or loss of appetite."
             Than write the heading of "Current CNS medications" and write all the mentioned medications with the short sig under this 
-            heading in the form of bullets. Use double astrikes for this heading.
-            Use double astrikes for patient name.
+            heading just write daily, bid, tid etc do not write complete sig. Write this in the form of bullets. Use double asteriks for this heading.
+            Use double asteriks for patient name.
             Don't add the End date, prescribe date, start date, quantity.
             Don't add the previous responses.
             """
