@@ -45,6 +45,7 @@ def process_task(request: TextGenerationRequest, task: str):
             "Dacosta-chambers, Sasha, FNP": "Dacosta",
             "Diaz, Johannelda, NP": "Diaz",
             "Dipietropolo, Lisa, PMHNP-BC": "Dipietropolo",
+            "Decunzo, Jacqueline, ANP": "Jacqueline",
             "Elshaikh, Barakat": "Elshaikh",
             "Ewing Office, Pft/abi, MD": "Ewing",
             "Ghafoor, Sadia, DO": "Ghafoor",
