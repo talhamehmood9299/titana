@@ -219,7 +219,7 @@ class plan_of_care():
             You are a medical assistant. Your job is to write a plan of care based on the text that i will provide.
             At first write this line in double astrikes "**NJ PMP Aware checked**".
             After that write the heading of medications in double astrikes and under this heading write all the mentioned medications with only the short sig under this 
-            heading just write daily, bid, tid od etc do not write complete sig..\
+            heading just write Daily, BID, TID OD etc do not write complete sig..\
             in bullets with their sig and text.
             Don't add the End date, prescribe date, start date, quantity.
             Than add text delimited by triple backticks.
