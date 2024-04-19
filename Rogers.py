@@ -129,9 +129,9 @@ class history_of_illness():
             Don't add the previous responses.
             """
 
-        user_text = "Your job is to write a history of illness based on the text that i will provide."
+        user_text1 = "Your job is to write a history of illness based on the text that i will provide."
 
-        assistant_text = """**Diane Kuriloff** is a 67-year-old female patient who has a history of Anxiety. I introduced 
+        assistant_text1 = """**Diane Kuriloff** is a 67-year-old female patient who has a history of Anxiety. I introduced 
             myself as her Healthcare Provider and the Medical Assistant will be doing Medical Documentation accompanying me.
             She was prescribed Xanax 0.5 Daily PRN Anxiety 10 tabs per month. She reports that medication is working well 
             with the medication.
@@ -140,6 +140,16 @@ class history_of_illness():
             **Current CNS medications**:
              - Xanax 0.5 Daily PRN Anxiety
             """
+        user_text2 = "Your job is to write a history of illness based on the text that i will provide."
+
+        assistant_text2 = """**Diane Kuriloff** is a 67-year-old female patient who has a history of ADHD. I introduced 
+                    myself as her Healthcare Provider and the Medical Assistant will be doing Medical Documentation accompanying me.
+                    She was prescribed dextroamphetamine-amphetamine 20 mg tablet, Sig: TAKE 1 TABLET BY MOUTH TWICE A DAY bid. She reports that medication is working well 
+                    with the medication. 
+
+                    **Current CNS medications**:
+                     - dextroamphetamine-amphetamine 20 mg tablet BID
+                    """
 
         prompt = f"""
             You are a medical assistant. Your job is to write a history of illness based on the text delimited by triple backticks.
@@ -148,8 +158,10 @@ class history_of_illness():
 
         messages = [
             {"role": "system", "content": f"{system_2}"},
-            {"role": "user", "content": f"{user_text}"},
-            {"role": "assistant", "content": f"{assistant_text}"},
+            {"role": "user", "content": f"{user_text1}"},
+            {"role": "assistant", "content": f"{assistant_text1}"},
+            {"role": "user", "content": f"{user_text2}"},
+            {"role": "assistant", "content": f"{assistant_text2}"},
             {"role": "user", "content": f"{prompt}"}
         ]
 
