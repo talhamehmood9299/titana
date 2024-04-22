@@ -32,7 +32,7 @@ def process_task(request: TextGenerationRequest, task: str):
             "Ahmad, S. Syed, MD": "Ahmad",
             "Albana, S. Fouad, MD": "Albana",
             "Anwar, F. Mohammad, MD": "Anwar",
-            "Ashraf, Mohammad, M.D.": "Ashraf",
+            "Ashraf, Mohammad, MD": "Ashraf",
             "Asiamah-asare, Vida-lynn, NP": "Asiamah",
             "Atieh, Virginia, APN": "Atieh",
             "Bresch, David, MD": "Bresch",
