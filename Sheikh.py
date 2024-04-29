@@ -40,8 +40,8 @@ class history_of_illness:
     def __init__(self, post_date, delimiter="####"):
         self.post_data = post_date
         self.delimiter = delimiter
-        result = self.final()  # Call the final() method and store the result
-        self.result = result  # Store the result as an attribute
+        result = self.final()
+        self.result = result
 
     def get_basic_information(self):
         system_0 = """
@@ -145,33 +145,31 @@ class history_of_illness:
 
         template = "Nothing"
         system_2 = f"""
-				You are a medical assistant and you job is to write a history of illness of the patient.
-				The text contains the patient demographics, History of  disease or disorder, Medications and Doctor dictation.
-				Please write a History of illness based on the text delimited by the triple backticks.lets think step by step.
-				First line contains the patient demographics and provided 'history line'. Don't add the medications in this line.
-				Second line contains the patient current complains.
-				It is necessary to concluded with "**No other medical concerns in today's appointment**".
-				Don't add the headings.
-				Don't repeat the lines.
-				Don't write more than 4 lines.
-				Write lines separately.
-			"""
+        You are a medical assistant and you job is to write a history of illness of the patient.
+        The text contains the patient demographics, History of  disease or disorder, Medications and Doctor dictation.
+        Please write a History of illness based on the text delimited by the triple backticks.lets think step by step.
+        First line contains the patient demographics and provided 'history line'. Don't add the medications in this line.
+        Second line contains the patient current complains.
+        It is necessary to concluded with "**No other medical concerns in today's appointment**".
+        Don't add the headings.
+        Don't repeat the lines.
+        Don't write more than 4 lines.
+        Write lines separately."""
         prompt_2 = f"""
-						Please write a History of illness in based on the text delimited by the triple backticks,\
-						```{basic_data}```
-						the the patient history is delimited by triple dashes,
-						---{history}---
-						other text is delimited by triple brackets.
-						{{{template}}}
-						and concluded with "No other medical concerns in today's appointment".
-						"""
+        Please write a History of illness in based on the text delimited by the triple backticks,\
+        ```{basic_data}```
+        the the patient history is delimited by triple dashes,
+        ---{history}---
+        other text is delimited by triple brackets.
+        {{{template}}}
+        and concluded with "No other medical concerns in today's appointment"."""
         few_shot_1 = """Write a history of illness of the patient based on the text that I will provide"""
         result_1 = """\
-				Calvin Mcrae, a 71-year-old male, came in for a follow-up visit. \n \
-				He has a medical history of Hypertension (HTN), Hypothyroidism, and a history of cellulitis of the face.\n \
-				He complains of the upper lip infection.\n \
-				**No other medical concerns in today's appointment**.\n \
-				"""
+        Calvin Mcrae, a 71-year-old male, came in for a follow-up visit. \n \
+        He has a medical history of Hypertension (HTN), Hypothyroidism, and a history of cellulitis of the face.\n \
+        He complains of the upper lip infection.\n \
+        **No other medical concerns in today's appointment**.\n \
+        """
         messages_2 = [{'role': 'system', 'content': system_2},
                       {'role': 'user', 'content': f"{self.delimiter}{few_shot_1}{self.delimiter}"},
                       {'role': 'assistant', 'content': result_1},
@@ -185,13 +183,6 @@ class plan_of_care:
     def __init__(self, post_date, delimiter="####"):
         self.post_data = post_date
         self.delimiter = delimiter
-        medication_start = post_date.find("cutformhere:") + len("cutformhere:")
-        medication_end = post_date.find("Doctor dictation")
-        self.medications_text = post_date[medication_start:medication_end].strip()
-        dictation_start = post_date.find("Doctor dictation:") + len("Doctor dictation:")
-        doctor_semi = post_date[dictation_start:].strip()
-        self.diagnosis = extract_text(doctor_semi)
-        self.dictation_final = get_dictation(doctor_semi)
         result = self.final()
         self.result = result
 
