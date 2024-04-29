@@ -45,7 +45,7 @@ class histroy_of_illness:
 
     def get_basic_information(self):
         system_0 = """
-        Remove all the disease or disorders mentioned from the text delimited by triple backticks and rearrange the remaining text.
+        Remove all the disease or disorders after the diagnosis heading mentioned from the text delimited by triple backticks and rearrange the remaining text.
         The headings should be:
         1) Patient demographics.
         2) Type of Visit.
