@@ -167,11 +167,15 @@ class histroy_of_illness:
         few_shot_1 = """Write a history of illness of the patient based on the text that I will provide"""
         result_1 = """\
         Calvin Mcrae, a 71-year-old male, came in for a follow-up visit. He has a medical history of Hypertension (HTN), Hypothyroidism, and a history of cellulitis of the face.\n \
+
         Patient is following up on hypertension and hypothyroidism. He denies symptoms such as headaches, dizziness, diaphoresis, nausea/vomiting, fatigue, weakness, palpitations, leg cramps, peripheral edema, vision changes, chest pain, and shortness of breath. Mr. Mcrae is compliant with his medications which include Vitamin D2 1,250 mcg (50,000 unit) capsule, amlodipine 5 mg tablet, levothyroxine 50 mcg tablet, and cefadroxil 500 mg capsule. He denies any untoward side effects from these medications. He requested a medication refill during this visit.\n \
 
         He is following up on diabetes. She denies experiencing symptoms such as polydipsia, polyphagia, and polyuria. There are also no reports of peripheral edema, vision changes, diaphoresis, tingling or numbness of the limbs, lesions on the feet, palpitations, chest pain, and shortness of breath. She is compliant with her medications which include OneTouch Ultra Test strips, OneTouch UltraSoft Lancets, metformin 500 mg tablet.\n \
+
         He reported that he had a sexual encounter and his wife developed a yeast infection, which caused him concern. He is an occasional smoker. He also reported having a pimple or infected cyst, which may have developed after a sexual encounter. An EKG was performed and the records were noted.\n \
+
         He had an infection of the upper lip and experienced irregular heartbeats. His conditions of importance include hypertension and hypothyroidism.\n \
+
         **No other medical concerns in today's appointment**.\n \
         """
 
@@ -279,8 +283,7 @@ class review_of_system:
                 "Asthma", "Urinary Tract Infection", "Migraine (Neurologic)",
                 "Convulsions (Neurologic)", "Joint Pain", "Arthritis", "Osteoarthritis",
                 "Pain in Hand", "Pain in Foot", "Knee Pain", "Opioid Dependence",
-                "Depressive Disorder", "Stress Disorder", "Hyperlipidemia",
-                "Hyperthyroidism", "Hypothyroidism"
+                "Depressive Disorder", "Stress Disorder"
             ]
         """
         few_shot_user_1 = """
