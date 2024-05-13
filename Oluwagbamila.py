@@ -338,3 +338,173 @@ class plan_of_care:
     def final(self):
         response = self.template_4()
         return response
+
+
+class review_of_system:
+    def __init__(self, post_date, delimiter="####"):
+        self.post_data = post_date
+        self.delimiter = delimiter
+        result = self.final()
+        self.result = result
+
+    def get_symptoms(self):
+        user_text = f"""
+                ```{self.post_data}```
+                You are a medical assistant. Your job is to identify the symptoms from the provided text delimited by triple backticks\
+                Next, extract and compile symptoms from the symptoms_list\
+                that are possibly related to the identified symptoms. \
+                Don't suggest any symptoms if it is not mentioned in the symptoms_list. \
+                Also add the symptoms in the output list that are not in the symptoms_list. \
+                It is mandatory that output should be in Python list.
+                Return empty list if no symptoms are present in the provided text.
+                """
+        symptoms_list = """
+            Your job is to extract the one symptom from this symptoms_list based on the identified symptoms.
+            symptoms_list = [
+                "Rashes", "Earache", "Discharge (possibly ear or nose related)",
+                "Ringing or decreased hearing", "Sneezing", "Sore throat",
+                "Stuffy or runny nose", "Congestion", "Cough", "Shortness of breath",
+                "Wheezing", "Mass or lump (possibly in the breast)",
+                "Abdominal pain", "Change in bowel habits", "Constipation",
+                "Diarrhea", "GERD (Gastro-esophageal Reflux Disease)", "Nausea",
+                "Vomiting", "Dysuria (painful urination)",
+                "Discharges (possibly genitourinary related)", "Cyanosis", "Edema",
+                "Dizziness", "Headache", "Neuropathic pain", "Numbness", "Paralysis",
+                "Seizures", "Tremors", "Back pain", "Joint pain", "Joint swelling",
+                "Muscle cramps", "Muscle weakness", "Anxiety", "Depression",
+                "Insomnia", "Opioid dependence", "Chest pain", "Palpitations",
+                "Blurred vision", "Vision loss", "Eye discharge", "Eye itching",
+                "Eye pain", "Abnormal bruising", "Bleeding", "Lymphadenopathy (enlarged lymph nodes)",
+                "Excessive thirst", "Excessive hunger", "Heat intolerance", "Cold intolerance", "Hypertension",
+                "ADHD", "Diabetes Mellitus", "Post-Traumatic Stress Disorder",
+                "Asthma", "Urinary Tract Infection", "Migraine (Neurologic)",
+                "Convulsions (Neurologic)", "Joint Pain", "Arthritis", "Osteoarthritis",
+                "Pain in Hand", "Pain in Foot", "Knee Pain", "Opioid Dependence",
+                "Depressive Disorder", "Stress Disorder"
+
+            ]
+        """
+        few_shot_user_1 = """
+         You are a medical assistant. Your job is to identify the symptoms from the provided text delimited by triple backticks\
+                        Next, extract and compile symptoms from the symptoms_list\
+                        that is possibly related to the identified symptoms.
+        """
+
+        few_shot_assistant_1 = """
+        ["Shortness of breath", "Cough"]
+        """
+        messages = [{'role': 'system', 'content': symptoms_list},
+                    {'role': 'user', 'content': f"{self.delimiter}{few_shot_user_1}{self.delimiter}"},
+                    {'role': 'assistant', 'content': few_shot_assistant_1},
+                    {'role': 'user', 'content': f"{self.delimiter}{user_text}{self.delimiter}"}]
+
+        response = get_completion(messages)
+
+        return response
+
+    def final(self):
+        symptoms = self.get_symptoms()
+        patient_data = """
+            "**Skin:** Patient denies rashes",
+            "**Ear/nose/throat:** Patient denies, Earache or discharge, Ringing or decreased hearing, Sneezing, Sore throat, Stuffy or runny nose",
+            "**Lungs:** Patient denies, Congestion, cough, Shortness of breath, Wheezing",
+            "**Breast:** Patient denies, Mass or Lump",
+            "**Abdomen:** Patient denies, Abdominal pain, change in bowel habits, Constipation, Diarrhea, GERD, Nausea, Vomiting",
+            "**GenitoUrinary:** Patient denies, Dysuria, Discharges",
+            "**Extremities:** Patient denies, Cyanosis, Edema",
+            "**Neurologic:** Patient denies, Dizziness, Headache, Neuropathic pain, Numbness, paralysis, Seizures, Tremors",
+            "**Musculoskeletal:** Patient denies, Back pain, Joint pain, Joint swelling, Muscle cramps, Muscle weakness, Breakthrough pain",
+            "**Psychiatric:** Patient denies, Anxiety, Depression, Insomnia, Opioid dependence",
+            "**Cardiovascular:** Patient denies, Chest pain, Palpitation",
+            "**Eyes:** Patient denies, Blurred or vision loss, Discharge itching or eye pain",
+            "**Heme/lymphatic:** Patient denies, Abnormal bruising, Bleeding, Lymphadenopathy",
+            "**Endocrine:** Patient denies, Excessive thirst or hunger, Heat or cold intolerance, Skin or hair changes, Weight gain or loss",
+            "**Dentistry:** Patient denies, Toothache"
+        """
+        system = """
+        you are a medical assistant. Your job is to upgrade the template lines based on the symptoms lines based on the symptoms
+        after adding the line "patient complains of "Symptom" at the end of the that line not in the middle.
+        Return the template with no changes if no symptoms are given in the provided text.
+        Don't add extra text in the output.
+        """
+        user_text = f"""
+         You are a medical assistant. Your job is to rewrite the template lines
+         {patient_data} after adding the line "patient complains of "symptom"
+         based on the symptoms list delimited by triple backticks.
+         '''{symptoms}'''
+        Use double asterisks for the heading and the added line.
+        Make sure all the provided text is added in the output.
+        """
+        few_shot_user_1 = """
+        You are a medical assistant. Your job is to upgrade the template lines based on the symptoms lines based on the symptoms
+        after adding the line "patient complains of "Symptom"
+        """
+        few_shot_assistant_1 = """
+            **Skin:** Patient denies rashes.
+            **Ear/nose/throat:** Patient denies, Earache or discharge, Ringing or decreased hearing, Sneezing, Sore throat, Stuffy or runny nose.
+            **Lungs:** Patient denies, Congestion, cough, Shortness of breath, Wheezing.
+            **Breast:** Patient denies, Mass or Lump".
+            **Abdomen:** Patient denies, Abdominal pain, change in bowel habits, Constipation, Diarrhea, GERD, Nausea, Vomiting.
+            **GenitoUrinary:** Patient denies, Dysuria, Discharges".
+            **Extremities:** Patient denies, Cyanosis, Edema".
+            **Neurologic:** Patient denies, Dizziness, Headache, Neuropathic pain, Numbness, paralysis, Seizures, Tremors.
+            **Musculoskeletal:** Patient denies, Joint pain, Joint swelling, Muscle cramps, Muscle weakness, Breakthrough pain. **Patient complains of back pain**
+            **Psychiatric:** Patient denies, Anxiety, Depression, Insomnia, Opioid dependence.
+            **Cardiovascular:** Patient denies, Chest pain, Palpitation.
+            **Eyes:** Patient denies, Blurred or vision loss, Discharge itching or eye pain.
+            **Heme/lymphatic:** Patient denies, Abnormal bruising, Bleeding, Lymphadenopathy.
+            **Endocrine:** Patient denies, Excessive thirst or hunger, Heat or cold intolerance, Skin or hair changes, Weight gain or loss.
+            **Dentistry:** Patient denies, Toothache. 
+        """
+        few_shot_user_2 = """
+        You are a medical assistant. Your job is to upgrade the template lines based on the symptoms lines based on the symptoms
+        after adding the line "patient complains of "Symptom"
+        """
+        few_shot_assistant_2 = """
+            **Skin:** Patient denies rashes.
+            **Ear/nose/throat:** Patient denies, Earache or discharge, Ringing or decreased hearing, Sneezing, Sore throat, Stuffy or runny nose.
+            **Lungs:** Patient denies, Congestion, cough, Shortness of breath, Wheezing.
+            **Breast:** Patient denies, Mass or Lump".
+            **Abdomen:** Patient denies, Abdominal pain, change in bowel habits, Constipation, Diarrhea, GERD, Nausea, Vomiting.
+            **GenitoUrinary:** Patient denies, Dysuria, Discharges".
+            **Extremities:** Patient denies, Cyanosis, Edema".
+            **Neurologic:** Patient denies, Dizziness, Headache, Neuropathic pain, Numbness, paralysis, Seizures, Tremors.
+            "**Musculoskeletal:** Patient denies, Back pain, Joint pain, Joint swelling, Muscle cramps, Muscle weakness, Breakthrough pain".
+            **Psychiatric:** Patient denies, Anxiety, Depression, Insomnia, Opioid dependence.
+            **Cardiovascular:** Patient denies, Chest pain, Palpitation.
+            **Eyes:** Patient denies, Blurred or vision loss, Discharge itching or eye pain.
+            **Heme/lymphatic:** Patient denies, Abnormal bruising, Bleeding, Lymphadenopathy.
+            **Endocrine:** Patient denies, Excessive thirst or hunger, Heat or cold intolerance, Skin or hair changes, Weight gain or loss.
+            **Dentistry:** Patient denies, Toothache. 
+        """
+        messages = [{'role': 'system', 'content': system},
+                    {'role': 'user', 'content': f"{self.delimiter}{few_shot_user_1}{self.delimiter}"},
+                    {'role': 'assistant', 'content': few_shot_assistant_1},
+                    {'role': 'user', 'content': f"{self.delimiter}{few_shot_user_2}{self.delimiter}"},
+                    {'role': 'assistant', 'content': few_shot_assistant_2},
+                    {'role': 'user', 'content': f"{self.delimiter}{user_text}{self.delimiter}"}]
+
+        response = get_completion(messages)
+
+        return response
+
+
+class physical_exam:
+    def __init__(self, post_date, delimiter="####"):
+        self.post_data = post_date
+        self.delimiter = delimiter
+        result = self.final()
+        self.result = result
+
+    def final(self):
+        response_1 = ""
+        if "Type of visit: Follow Up" in self.post_data:
+            response_1 = "Patient is AAO x 3. Not in acute distress. Breathing is non-labored. Normal respiratory effort. The affect is normal and appropriate."
+        elif "Type of visit: Office Visit" in self.post_data:
+            response_1 = "Well-nourished and well-developed; in no acute distress. Breathing is non-labored, with normal respiratory effort. The affect is normal and appropriate."
+        elif "Type of visit: Lab/Radiology Review" in self.post_data:
+            response_1 = "Well-nourished and well-developed; in no acute distress. Breathing is non-labored, with normal respiratory effort. The affect is normal and appropriate."
+        else:
+            "Physical exam for this is not developed"
+        return response_1
+

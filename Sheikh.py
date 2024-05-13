@@ -267,8 +267,7 @@ class review_of_system:
         user_text = f"""
                 ```{self.post_data}```
                 You are a medical assistant. Your job is to identify the symptoms from the provided text delimited by triple backticks\
-                Next, extract and compile symptoms from the symptoms_list\
-                that are possibly related to the identified symptoms. \
+                Next, extract and compile identified symptoms from the symptoms_list.\
                 Don't suggest any symptoms if it is not mentioned in the symptoms_list. \
                 Also add the symptoms in the output list that are not in the symptoms_list. \
                 It is mandatory that output should be in Python list.

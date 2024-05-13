@@ -379,8 +379,8 @@ class review_of_system:
                 "Asthma", "Urinary Tract Infection", "Migraine (Neurologic)",
                 "Convulsions (Neurologic)", "Joint Pain", "Arthritis", "Osteoarthritis",
                 "Pain in Hand", "Pain in Foot", "Knee Pain", "Opioid Dependence",
-                "Depressive Disorder", "Stress Disorder", "Hyperlipidemia",
-                "Hyperthyroidism", "Hypothyroidism"
+                "Depressive Disorder", "Stress Disorder"
+                
             ]
         """
         few_shot_user_1 = """
