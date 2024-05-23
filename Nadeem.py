@@ -35,6 +35,8 @@ class cpt_code:
     def final(self):
         result = get_cpt_code(self.post_date)
         return result
+
+
 class histroy_of_illness:
     def __init__(self, post_date, delimiter="####"):
         self.post_data = post_date
@@ -63,7 +65,7 @@ class histroy_of_illness:
         few_shot_1 = """Smith, Dolores, 76 F. pt flwng pain mngnm, nt,, severe lbp, pain mngmnt not much help, anxious restless, \
          not sleepmng, flwng rglrly pain mmngmnt. dfclty sleepng at ni8. 140/85 after repeat bp n taking clonodine."""
         result_1 = """\
-                            Dolores Smith, a 76-year-old female, came in for an office visit. \n \
+                            Dolores Smith, a 76-year-old female, presented for an office visit. \n \
                             She has been following pain management for severe low back pain, but it hasn't been much help. \n \
                             She is anxious, restless, and has difficulty sleeping at night. \n \
                             Her blood pressure after repeat and taking clonidine was 140/85. \n \
@@ -71,7 +73,7 @@ class histroy_of_illness:
                             """
         few_shot_2 = """Write a history of illness of the patient based on the text that I will provide"""
         result_2 = """\
-                            Godoy Sergio, a 39-year-old male, came in for a follow-up visit. \n \
+                            Godoy Sergio, a 39-year-old male, presented for a follow-up visit. \n \
                             The patient has a history of HTN, and he is taking his BP readings as an outpatient, his recent BP reading was 120/76, his heart rate was 68, and his current weight is 203 pounds. \n \
                             He reports his sugar levels are better.\n \
                             He is also following for DM, Atherosclerosis heart disease, and Hyperlipidemia.\n \
@@ -187,6 +189,7 @@ class plan_of_care:
         response = get_completion(messages)
 
         return response
+
 
 class review_of_system:
     def __init__(self, post_date, delimiter="####"):
@@ -335,6 +338,7 @@ class review_of_system:
         response = get_completion(messages)
 
         return response
+
 
 class physical_exam:
     def __init__(self, post_date, delimiter="####"):
