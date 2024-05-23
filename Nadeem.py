@@ -57,7 +57,7 @@ class histroy_of_illness:
         Don't repeat the lines.
         Use double astrikes for all the patient name and medication.
         Write lines separately.
-                        """
+        """
         prompt_2 = f"""
         Please write a History of illness in based on the text delimited by the triple backticks,\
         ```{self.post_data}```

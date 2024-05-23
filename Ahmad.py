@@ -149,7 +149,7 @@ class histroy_of_illness:
         Write the follow up information of disease or disorder in a line separately with only related medications.
         It is necessary to concluded with "**No other medical concerns in today's appointment**".
         Don't add the headings.
-        Don't repeat the medical history.
+        Don't repeat the medical history in the output.
         Utilize double asterisks for name, type of visit and medication.
         Make sure all the provided text is added in the output, 
         and nothing is missed in the output.

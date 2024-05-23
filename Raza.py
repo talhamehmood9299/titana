@@ -42,30 +42,30 @@ class plan_of_care:
               The text also contains the disease or disorders and medications name.
               Make sure all the mentioned medications should be written under the heading of related disease or disorder. Don't \
               suggest the brand name.
-              Don't write the separate heading of "Medications", "Referral" and "FollowUp" at the end.
-              Don't add the additional headings.
-              Don't add the start date and end of medications.
+              Don't write the "SIG" in the output.
               Make sure all the conversation is added in the output.
               Make sure all the related information is written under one Heading.
-              Write the test related text under one heading that is blood work. If the related information is already \
+              Write the medical test related text under one heading that is blood work. If the related information is already \
               written in the heading of disease or disorder than don't write it in the heading of blood work.
-              Don't repeat the things.
+              Don't repeat the information in different heading.
               Utilize double asterisks for all headings.
               Utilize double asterisks for all medications in the output text.
-              At the end make sure that the output doesn't contain separate heading of medication. If separate heading of \
-              medication is present than it is mandatory to adjust it in the heading of most related disease or disorder, and 
-              remove the heading. 
+              At the end make sure that the output doesn't contain separate heading of "Medication" or "Other medication". If separate heading of \
+              "Medication" and "Other medication" is present than it is mandatory to adjust it in the heading of most related disease or disorder, and 
+              remove the heading of "Medication" and "Other medication". 
               Write the pharmacy related text also in heading of disease or disorder.
-              Don't write the "start Date", "End Date" and the line "The prescription was successfully delivered to the /
+              Don't write the separate heading of "Medication", "Referral" and "FollowUp" in the output
+              Don't write the additional headings in the output
+              Don't add the "start date", "end date" and "Sig" of medications and the line "The prescription was successfully delivered to the /
               ultimate server.
-              It is Mandatory to conclude the plan of care with this line "Follow-up as scheduled"
-              Make sure nothing is missed in the output """},
+              Don't add the demographics like first name, last name, age, gender and type of visit in the output.
+              It is Mandatory to conclude the plan of care with this line "Follow-up as scheduled".
+              Make sure nothing is missed in the output.
+"""},
 
             {"role": "user", "content": "Your job is to write a plan of care for the patient. Don't add the outputs in the\
              future outputs."},
             {"role": "assistant", "content": f"""
-            **Anemia**
-             None
             **URTI**
             The patient has developed a cold with cough and congestion. Denies body aches. We will call Augmentin 500 mg along with Promathazine to take as directed. Monitor the patient's progress and adjust treatment as necessary.
             **Hypertension**
