@@ -48,7 +48,7 @@ def get_dictation(text):
     return response
 
 
-def get_completion(messages, model="gpt-4o", temperature=0):
+def get_completion(messages, model="gpt-4", temperature=0):
     response = openai.ChatCompletion.create(
         model=model,
         messages=messages,
