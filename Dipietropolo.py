@@ -21,6 +21,54 @@ class history_of_illness():
         result = f"{result0}\n{result1}\n{result2}"
         self.result = result
 
+    def current_medication(self):
+        prompt_0 = f"""
+        You are expert in calculating dates. Your job is to return the medications that patient is taking at the visit date after comparing with the "start date", "End date", "QTY" and "Sig" from the text delimited by triple \
+        backticks.
+        Return "Nothing" if no medication is found.
+        Use double asterisks for heading. **Current CNS Medications**.
+        Return only Central nervous system therapeutic medications.
+        """
+        few_shot_user_2 = """
+        Effexor XR 37.5 mg capsule,extended release, 1 tab PO daily , Qty: 30, Start Date: 04/21/2024, End Date: 05/21/2024, Prescribe Date: 04/21/2024
+        alprazolam 0.5 mg tablet, 1 tab by mouth daily as needed for anxiety , Qty: 15, Start Date: 04/21/2024, End Date: 05/21/2024, Prescribe Date: 04/21/2024
+        """
+        few_shot_assistant_2 = """
+        **Current CNS Medications:**
+
+        No medications 
+        """
+        few_shot_user_1 = """
+
+        Klonopin 1 mg tablet, 1 tab qHS , Qty: 30, Start Date: 05/23/2024, End Date: 06/22/2024, Prescribe Date: 05/23/2024
+        duloxetine 60 mg capsule,delayed release, TAKE 1 CAPSULE BY MOUTH EVERY DAY daily, Qty: 30, Start Date: 04/24/2024, End Date: 05/24/2024, Prescribe Date: 04/24/2024
+        promethazine-DM 6.25 mg-15 mg/5 mL oral syrup, 10mL by mouth every 8 hours prn cough , Qty: 300, Start Date: 01/05/2024, Prescribe Date: 01/05/2024,Reconciliation Date: 03/22/2024
+        Zithromax Z-Pak 250 mg tablet, 1 dose pk by mouth as directed on dose pack; For 500 mg dose pack: take 500 mg once daily for 3 days , Qty: 6, Start Date: 01/05/2024, Prescribe Date: 01/05/2024,Reconciliation Date: 03/22/2024
+        amoxicillin 875 mg tablet, take 1 tablet(875MG) by oral route bid, Qty: 10, Start Date: 12/07/2023, End Date: 12/12/2023, Prescribe Date: 12/07/2023,Reconciliation Date: 03/22/2024
+
+        """
+
+        few_shot_assistant_1 = """
+        Current CNS medications:f
+
+        - Klonopin 1 mg tablet
+        - Duloxetine 60 mg capsule
+
+        """
+
+        messages = [{'role': 'system', 'content': prompt_0},
+                    {'role': 'user', 'content': f"{few_shot_user_1}"},
+                    {'role': 'assistant', 'content': f"{few_shot_assistant_1}"},
+                    {'role': 'user', 'content': f"{few_shot_user_2}"},
+                    {'role': 'assistant', 'content': f"{few_shot_assistant_2}"},
+                    {'role': 'user', 'content': f"{self.post_data}"}
+
+                    ]
+
+        response_0 = get_completion(messages)
+        return response_0
+
+
     def ros(self):
         ros = """
             Anxiety: Managed,
@@ -116,12 +164,13 @@ class history_of_illness():
     def hoi(self):
         introduction_line = ("I introduced myself as her Healthcare Provider and the Medical Assistant will be doing "
                              "Medical Documentation accompanying me.")
+        current_medication = self.current_medication()
 
         system_2 = f"""
             You are a medical assistant. Your job is to write a history of illness based on the text that i will provide.
             The first line contains the patient demographics and than write this sentence without any changes"{introduction_line}".
             The second lines contains the text that patient reports in doctor dictations. 
-            The third line must contain this sentence "Denied SI/HI, panic attacks, or AVH. No report of difficulty sleeping or loss of appetite."
+            The third line must contain this sentence "Denied SI/HI, panic attacks, or AVH. No report of difficulty sleeping or loss of appetite.". Change this sentence according to doctor dictation if necessary.
             Than write the heading of "Current CNS medications" and write all the mentioned medications with the short sig under this 
             heading just write daily, bid, tid etc do not write complete sig. Write this in the form of bullets. Use double asteriks for this heading.
             Use double asteriks for patient name.
@@ -140,28 +189,18 @@ class history_of_illness():
             **Current CNS medications**:
              - Xanax 0.5 Daily PRN Anxiety
             """
-        user_text2 = "Your job is to write a history of illness based on the text that i will provide."
-
-        assistant_text2 = """**Diane Kuriloff** is a 67-year-old female patient who has a history of ADHD. I introduced 
-                    myself as her Healthcare Provider and the Medical Assistant will be doing Medical Documentation accompanying me.
-                    She was prescribed dextroamphetamine-amphetamine 20 mg tablet, Sig: TAKE 1 TABLET BY MOUTH TWICE A DAY bid. She reports that medication is working well 
-                    with the medication. 
-
-                    **Current CNS medications**:
-                     - dextroamphetamine-amphetamine 20 mg tablet BID
-                    """
 
         prompt = f"""
             You are a medical assistant. Your job is to write a history of illness based on the text delimited by triple backticks.
             ```{self.post_data}```
+            and these are the current CNS medications delimited by triple hashtags. Write only these medications.
+            ###{current_medication}### 
             """
 
         messages = [
             {"role": "system", "content": f"{system_2}"},
             {"role": "user", "content": f"{user_text1}"},
             {"role": "assistant", "content": f"{assistant_text1}"},
-            {"role": "user", "content": f"{user_text2}"},
-            {"role": "assistant", "content": f"{assistant_text2}"},
             {"role": "user", "content": f"{prompt}"}
         ]
 
@@ -197,23 +236,29 @@ class plan_of_care():
 
     def final(self):
         education = """
-            **Education:**
+        **Education:**
+        
+        - Relaxation techniques discussed. Stressors and coping strategies reviewed. Yoga, deep breathing, journaling were 
+        encouraged. UDS will be conducted periodically to monitor therapeutic activity, compliance including 
+        potential misuse, unauthorized drug use, or diversion.
+        - Common side effects of medication were discussed as well as risks, benefits, and alternatives of medications
+        including risk of serotonin syndrome with the medications and advised to the procedures to follow if this were to 
+        occur
+            
+        """
+        controlled_education = """
+        - The patient has been educated on the risks, benefits, and alternatives of the controlled substances, including but 
+        not limited to nausea, vomiting, constipation, sedation, dizziness, addiction, dependency, and tolerance to 
+        long-term medication usage.
+        - The patient was educated not to drive or operate heavy machinery while on this medication, especially during the 
+        initiation and titration of the medication. Emphasis was placed on tolerance, abuse, and dependence.
+        - The patient was educated on the proper storage and safekeeping of controlled medications. The patient was educated 
+        on the risk of combining opioids with alcohol, sedatives, and illicit substances.
+        **"Limit alcohol, caffeine, and sugar consumption"**
 
-                - Relaxation techniques discussed. Stressors and coping strategies reviewed. Yoga, deep breathing, journaling were 
-                encouraged. UDS will be conducted periodically to monitor therapeutic activity, compliance including 
-                potential misuse, unauthorized drug use, or diversion.
-                - Common side effects of medication were discussed as well as risks, benefits, and alternatives of medications
-                including risk of serotonin syndrome with the medications and advised to the procedures to follow if this were to 
-                occur
-                - The patient has been educated on the risks, benefits, and alternatives of the controlled substances, including but 
-                not limited to nausea, vomiting, constipation, sedation, dizziness, addiction, dependency, and tolerance to 
-                long-term medication usage.
-                - The patient was educated not to drive or operate heavy machinery while on this medication, especially during the 
-                initiation and titration of the medication. Emphasis was placed on tolerance, abuse, and dependence.
-                - The patient was educated on the proper storage and safekeeping of controlled medications. The patient was educated 
-                on the risk of combining opioids with alcohol, sedatives, and illicit substances.
-                **"Limit alcohol, caffeine, and sugar consumption"**
-            """
+        """
+
+
 
         system_3 = f"""
             You are a medical assistant. Your job is to write a plan of care based on the text that i will provide.

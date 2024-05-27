@@ -119,9 +119,13 @@ class plan_of_care:
         11) At the end, check if there is a heading of medication in the final response then remove this heading and add the medication in the second line.
          """
         prompt = f"""
-        You are a medical assistant your job is to write the plan of care based on this text.
+        You are a medical assistant your job is to write the plan of care based on this text. Lets think step by step.
+        First write the name of the disease or disorder.
+        Than write the name of the medication and text that is related to that specific disease or disorder:
+        {self.post_data}\n
+        Than write these template lines of that specific disease or disorder.
         {template}
-        {self.post_data}
+        Don't write the additional text.
        """
 
         delimiter = "###"

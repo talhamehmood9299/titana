@@ -73,5 +73,11 @@
 - She is advised to wear masks for at least 10 days.
 - Educated the patient about the significance of maintaining a healthy lifestyle, including regular exercise and a balanced diet, to support overall kidney health.
 
-*8URI**:
+**8URI**:
 - A patient is advised to hydrate herself and drink plenty of fluids.
+
+**Seasonal Allergies**:
+- It is advised to avoid the allergens.
+
+**GERD**:
+- Avoid foods and drinks that trigger reflux.
