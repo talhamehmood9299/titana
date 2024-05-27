@@ -269,6 +269,9 @@ class plan_of_care():
             Don't add the End date, prescribe date, start date, quantity.
             Than add text delimited by triple backticks.
             ```{education}```
+            If the provided text contains any controlled medication than add this text delimited by triple dashes at the end also. If it doesn't contain
+            any controlled medication than don't add this text.
+            ---{controlled_education}---
             At the end write about the followup visit in double astrikes.
             Don't add the previous responses.
             Don't add the heading of plan of care.
@@ -309,10 +312,32 @@ class plan_of_care():
 
             **Follow-up: One Month**
             """
+
+        few_shot_assistant_1 = """
+            **NJ PMP Aware checked**
+            **Medications:**
+
+            - Metformin 40 mg
+            - setagliptin 60mg
+
+
+            **Education:**
+
+            - Relaxation techniques discussed. Stressors and coping strategies reviewed. Yoga, deep breathing, journaling were 
+            encouraged. UDS will be conducted periodically to monitor therapeutic activity, compliance including 
+            potential misuse, unauthorized drug use, or diversion.
+            - Common side effects of medication were discussed as well as risks, benefits, and alternatives of medications
+            including risk of serotonin syndrome with the medications and advised to the procedures to follow if this were to 
+            occur
+
+            **Follow-up: One Month**
+            """
         messages = [
             {"role": "system", "content": f"{system_3}"},
             {"role": "user", "content": f"{few_shot_user}"},
             {"role": "assistant", "content": f"{few_shot_assistant}"},
+            {"role": "user", "content": f"{few_shot_user}"},
+            {"role": "assistant", "content": f"{few_shot_assistant_1}"},
             {"role": "user", "content": f"{prompt}"}
         ]
 
