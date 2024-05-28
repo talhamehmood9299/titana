@@ -50,7 +50,7 @@ class histroy_of_illness:
         The text contains the patient demographics and Doctor dictation.
         Please write a History of illness based on the text delimited by the triple backticks.lets think step by step.
         First line contains the patient demographics. Don't add the medications in this line.
-        Second line contains the patient current complains.
+        Next line contains the patient current complains and other mentioned text.
         It is necessary to concluded with "**No other medical concerns in today's appointment**".
         Don't add the headings.
         Ensure that all information is included in the response.
