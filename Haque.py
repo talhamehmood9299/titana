@@ -371,7 +371,7 @@ class plan_of_care:
 
     def template(self):
         template = """
-        -Counselling Recommendations:
+        **Counselling Recommendations:**
         -Smoking cessation
         -Alcohol
         -Diet
