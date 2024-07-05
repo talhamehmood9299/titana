@@ -9,13 +9,9 @@ from langchain.chat_models import ChatOpenAI
 from langchain.schema.runnable import RunnablePassthrough
 from langchain.schema.output_parser import StrOutputParser
 from langchain.document_loaders import TextLoader
-
-
+from extra_functions import get_completion
 
 OPENAI_API_KEY = os.environ.get('OPENAI_API_KEY')
-
-
-
 
 def get_templates(basic_data):
 
@@ -53,3 +49,44 @@ def get_templates(basic_data):
 
     template = rag_chain.invoke(basic_data)
     return template
+
+
+def gather_information(basic_data):
+    system = f"""
+ You are a medical assistant. your job is to analyze the doctor dictation available in the provided text. lets think step by step.
+
+Focus on the text that is after the heading of doctor dictation and return the past information with present complication. Ignor the remaing text.
+"""
+    few_shot_user = """
+ You are a medical assistant. your job is to analyze the doctor dictation available in the provided text. lets think step by step.
+
+Focus on the text that is after the heading of doctor dictation and return the past information with present complication. Ignor the remaing text.
+"""
+    few_shot_assistant = """
+    Present complication:
+        She is having post-menopausal bleeding, needs GYN follow up asap.
+        Present symptoms are night sweats and postmenopausal symptoms.
+
+    Past information:
+        Patient made an appointment with GYN on July 18, 2024.
+        Feeling better since the last visit.
+        Symptoms of dry cough, congestion, wheezing and rhonchi resolved.
+        Completed Doxycycline, Decadron and Phenergan treatment.
+        Last menstruation 03 to 04 months ago, lasted for 01 day, before this last menstruation was 10 years ago.
+        Seen by gynecologist 4 to 5 months ago June 18, 2024.
+"""
+
+    prompt = f"""
+
+You are a medical assistant. Your job is to extract the patient present complication and patient past information from the text delimited by triple backticks.
+
+'''{basic_data}'''
+"""
+    messages_4 = [{'role': 'system', 'content': system},
+                        {'role': 'user', 'content': f"{few_shot_user}"},
+                        {'role': 'assistant', 'content': few_shot_assistant},
+                        {'role': 'user', 'content': f"{prompt}"}]
+    response = get_completion(messages_4)
+    return response
+    
+    
