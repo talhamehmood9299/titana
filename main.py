@@ -79,7 +79,7 @@ def process_task(request: TextGenerationRequest, task: str):
             "Usmani, H. Qaisar, MD": "Usmani",
             "Viaje, Mabrigida, NP": "Viaje",
             "Younus, W. Mohammad, MD": "Younus",
-            "Haque, U. Nadeem, MD": "Huq.py"
+            "Haque, U. Nadeem, MD": "Haque"
         }
 
         module_name = provider_modules.get(provider_module)
