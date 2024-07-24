@@ -67,7 +67,7 @@ def process_task(request: TextGenerationRequest, task: str):
             "Memon, Mushtaq, MD": "Memon",
             "Monitoring, Remote Patient, MD": "Monitoring_Remote_Patient",
             "Monitoring, Remote Therapeutic, MD": "Monitoring_Remote_Therapeutic",
-            "Saad, Moizah, D.O": "Nadeem",
+            "Nadeem, Shahzinah, MD": "Nadeem",
             "Navigator Visit, Suboxone, DO": "Navigator_Visit",
             "Newsome, J. La-toya, NP": "Newsome",
             "Oluwagbamila, Geralda, NP": "Oluwagbamila",

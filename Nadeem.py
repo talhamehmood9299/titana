@@ -128,7 +128,6 @@ class plan_of_care:
         Don't write the additional text.
        """
 
-        delimiter = "###"
         few_shot_user_1 = """
             has c/op lbp since fall,hasnt start pt yet, hand hrts,hstry of strpoke ,askng in pt rehab, contacted she has to saty in hsptl 3 nui8s then 
             will take her, enc to out pt ,trmdl refill,will strt from mon pot. htn-comp wd meds,flwng low salt cardia. cp wd recent fall n lbp leg pain-left pt,
@@ -337,7 +336,6 @@ class review_of_system:
 
         return response
 
-
 class physical_exam:
     def __init__(self, post_date, delimiter="####"):
         self.post_data = post_date
@@ -346,10 +344,9 @@ class physical_exam:
         self.result = result
 
     def final(self):
-        response_1 = ""
         if "Type of visit: Follow Up" in self.post_data:
             response_1 = ("Limited physical exam. Not in acute distress. Breathing is non-labored, Normal respiratory "
                           "effort. The effect is normal and appropriate.")
         else:
-            response_1 = "Currently I can only provide physical exam for Type of visit: Fllow Up"
+            response_1 = "Currently I can only provide physical exam for Type of visit: Follow Up"
         return response_1
