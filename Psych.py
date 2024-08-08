@@ -272,5 +272,5 @@ class plan_of_care():
         ]
 
         result = get_completion(messages)
-        final_response = result + '\n' + education
+        final_response = result
         return final_response
